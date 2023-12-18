@@ -10,6 +10,8 @@ on:
       - ".github/workflows/**"
       - "!.github/workflows/publish.yml"
   push:
+    branches:
+      - "uc"
     paths-ignore:
       - "**.md"
       - "**.rst"
@@ -77,18 +79,18 @@ jobs:
         #
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          echo "${{ secrets.JUPYTERHUB_HELM_CHART_DEPLOY_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          #ssh-keyscan github.com >> ~/.ssh/known_hosts
+          #echo "${{ secrets.JUPYTERHUB_HELM_CHART_DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          #chmod 600 ~/.ssh/id_ed25519
 
-      - name: Setup push rights to Quay.io
+      - name: Setup push rights to harbor
         # This was setup by...
         # 1. Creating a [Robot Account](https://quay.io/organization/jupyterhub?tab=robots) in the JupyterHub
         # .  quay.io org
         # 2. Giving it enough permissions to push to the binderhub image
         # 3. Putting the robot account's username and password in GitHub actions environment
         run: |
-          docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
+          docker login -u "${{ secrets.HARBOR_USERNAME }}" -p "${{ secrets.HARBOR_PASSWORD }}" hub.opensciencegrid.org
 
       - name: Configure a git user
         # Having a user.email and user.name configured with git is required to
