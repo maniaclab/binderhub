@@ -8,8 +8,8 @@ charts:
     baseVersion: 1.0.0-0.dev
     imagePrefix: hub.opensciencegrid.org/usatlas/jupyterhub/k8s-
     repo:
-      git: jupyterhub/helm-chart
-      published: https://jupyterhub.github.io/helm-chart
+      git: maniaclab/binderhub
+      published: https://maniaclab.uchicago.edu/binderhub
     images:
       binderhub:
         # We will not use the default build contextPath, and must therefore
