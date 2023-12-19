@@ -6,7 +6,7 @@
 # Exit on errors, assert env vars, log commands
 set -eux
 
-PUBLISH_ARGS="--push  \
+PUBLISH_ARGS="--push --publish-chart \
     --builder docker-buildx \
     --platform linux/amd64 --platform linux/arm64 \
     "
