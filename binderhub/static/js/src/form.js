@@ -36,6 +36,12 @@ export function getBuildFormValues() {
     ref = "";
   }
   const path = $("#filepath").val().trim();
+  var gpu = "gpu_true"
+  var checkBox = document.getElementById("gpu");
+  if ( checkBox.checked == false )
+    var  gpu = "gpu_false"
+  ref = ref + gpu
+  console.log(ref);
   return {
     providerPrefix: providerPrefix,
     repo: repo,

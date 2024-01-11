@@ -54,7 +54,7 @@
             <label for="ref">{{(repo_providers.values() | list | first).labels.tag_text}}</label>
             <input class="form-control" type="text" id="ref" placeholder="HEAD"/>
           </div>
-          <div class="form-group col-md-6">
+          <div class="form-group col-md-8">
             <label for="filepath">Path to a notebook file (optional)</label>
             <div class="input-group">
               <input class="form-control" type="text" id="filepath"
@@ -76,6 +76,18 @@
                 </ul>
               </div>
             </div>
+          </div>
+
+        </div>
+
+        <div class="form-row row">
+          <div class="form-group col-md-2">
+             <label for="gpu">Resource requests</label>
+             <div class="input-group">
+              <div class="checkbox">
+                <label><input type="checkbox" id="gpu" name="gpu" value="yes"> I need GPU</label>
+              </div>
+             </div>
           </div>
 
           <div class="form-group col-md-2">
