@@ -81,15 +81,52 @@
         </div>
 
         <div class="form-row row">
-          <div class="form-group col-md-2">
-             <label for="gpu">Resource requests</label>
+          <div class="form-group col-md-1">
+             <!--label for="gpu">Resource requests</label-->
              <div class="input-group">
-              <div class="checkbox">
+		     <img id="badge" src="{{static_url("images/resources.svg")}}" alt="Binder badge logo">
+              <!--div class="checkbox">
                 <label><input type="checkbox" id="gpu" name="gpu" value="yes"> I need GPU</label>
-              </div>
+              </div-->
              </div>
           </div>
 
+          <div  class="form-group col-md-4">
+                  <label for="gpu-product">
+                      GPU Model - name(avail/total)
+                  </label>
+                  <div class="input-group">
+                    <select name="gpu-product" id="gpu-product" class="form-control">
+                      <option value="NVIDIA-GeForce-RTX-2080-Ti">NVIDIA GeForce RTX 2080 Ti</option>
+                      <option value="Tesla-V100-PCIE-16GB">NVIDIA Tesla V100</option>
+                    </select>
+		    <div class="input-group-btn" style="min-width:50px">
+                     <input v-model="instances" type="number" class="form-control" name="gpuCount" id="gpuCount" min="0" max="4" value="0" required/>
+                    </div>
+                  </div>
+          </div>
+
+          <div class="form-group col-md-1" style="width: 12.499999995%">
+             <!label for="qos">QoS</label>
+             <div class="input-group">
+               <div class="checkbox">
+		 <label><input type="checkbox" id="qos" name="qos">Guaranteed</label>
+               </div>
+             </div>
+          </div>
+          <div class="form-group col-md-2" style="width: 12.499999995%">
+             <!label for="qos">CPUs</label>
+             <div class="input-group">
+                 <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=16 value=1 disabled>
+             </div>
+          </div>
+          <div class="form-group col-md-2">
+             <!label for="qos">Memory</label>
+             <div class="input-group">
+               <input type="number" name="memory" id="memory" class="form-control" step="0.01" value=1.0 disabled>
+	       <span class="input-group-addon">GB</span>
+             </div>
+          </div>
           <div class="form-group col-md-2">
             <div class="btn-group" id="launch-buttons">
               <button id="submit" class="btn-submit" type="submit">launch</button>
@@ -211,6 +248,27 @@
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", async () => {
   await indexMain();
-})
+  console.log("DOM loaded!");
+  const response = await fetch("{{resources_url}}");
+  const json = await response.json();
+  console.log(json);
+
+  var gpuSelect = document.getElementById("gpu-product");
+  gpuSelect.options.length = 0;
+  for(var i = 0; i < json.data.length; i++) {
+    var option = document.createElement("option");
+    option.value = json.data[i]["product"];
+    if (json.data[i]["available"] == 0) {
+        option.disabled = "disabled"}
+    console.log(option.value);
+    option.text = json.data[i]["product"] + "(" +json.data[i]["available"].toString()+"/"+ json.data[i]["count"].toString() + ")";
+    gpuSelect.add(option);
+  }
+  console.log(document.getElementById('gpu-product'))
+});
+document.getElementById('qos').onchange = function() {
+    document.getElementById('memory').disabled = !this.checked;
+    document.getElementById('cpu').disabled = !this.checked;
+};
 </script>
 {% endblock footer %}

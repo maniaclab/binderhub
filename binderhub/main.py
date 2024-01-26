@@ -32,6 +32,7 @@ class MainHandler(BaseHandler):
         self.render_template(
             "index.html",
             badge_base_url=self.get_badge_base_url(),
+            resources_url=self.reverse_url("resources"),
             base_url=self.settings["base_url"],
             submit=False,
             google_analytics_code=self.settings["google_analytics_code"],

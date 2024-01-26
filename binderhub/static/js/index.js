@@ -196,9 +196,15 @@ function indexMain() {
   $("#build-form").submit(async function (e) {
     e.preventDefault();
     const formValues = getBuildFormValues();
+    //console.log(formValues)
     updateUrls(BADGE_BASE_URL, formValues);
     await build(
-      formValues.providerPrefix + "/" + formValues.repo + "/" + formValues.ref,
+      formValues.providerPrefix + "/" + formValues.repo + "/" + formValues.ref + 
+            "?" + "gpuModel=" + formValues.gpuModel +
+            "&" + "gpuCount=" + formValues.gpuCount +
+            "&" + "qos=" + formValues.qos +
+            "&" + "cpu=" + formValues.cpu +
+            "&" + "memory=" + formValues.memory,
       log,
       fitAddon,
       formValues.path,

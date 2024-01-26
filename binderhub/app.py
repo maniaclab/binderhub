@@ -44,6 +44,7 @@ from traitlets.config import Application
 from .base import AboutHandler, Custom404, VersionHandler
 from .build import BuildExecutor, KubernetesBuildExecutor, KubernetesCleaner
 from .builder import BuildHandler
+from .resources import ResourcesHandler
 from .config import ConfigHandler
 from .events import EventLog
 from .health import HealthHandler, KubernetesHealthHandler
@@ -970,6 +971,7 @@ class BinderHub(Application):
 
         handlers = [
             (r"/metrics", MetricsHandler),
+            (r"/resources", ResourcesHandler, None,"resources"),
             (r"/versions", VersionHandler),
             (r"/build/([^/]+)/(.+)", BuildHandler),
             (r"/health", self.health_handler_class, {"hub_url": self.hub_url_local}),

@@ -36,17 +36,21 @@ export function getBuildFormValues() {
     ref = "";
   }
   const path = $("#filepath").val().trim();
-  var gpu = "gpu_true"
-  var checkBox = document.getElementById("gpu");
-  if ( checkBox.checked == false )
-    var  gpu = "gpu_false"
-  ref = ref + gpu
-  console.log(ref);
+  const gpuModel = $("#gpu-product").val().trim();
+  const gpuCount = $("#gpuCount").val().trim();
+  const qos = document.getElementById("qos").checked ? "Guaranteed" : "Burstable";
+  const cpu = $("#cpu").val().trim();
+  const memory = $("#memory").val().trim();
   return {
     providerPrefix: providerPrefix,
     repo: repo,
     ref: ref,
     path: path,
     pathType: getPathType(),
+    gpuModel: gpuModel,
+    gpuCount: gpuCount,
+    qos: qos,
+    cpu: cpu,
+    memory: memory
   };
 }

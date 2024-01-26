@@ -270,14 +270,26 @@ class BuildHandler(BaseHandler):
         build_token = self.get_argument("build_token", None)
         self.check_build_token(build_token, f"{provider_prefix}/{spec}")
         self.check_rate_limit()
-
+ 
+        gpuModel = self.get_argument('gpuModel', None)
+        gpuCount = self.get_argument('gpuCount', None)
+        qos = self.get_argument('qos', None)
+        cpu = self.get_argument('cpu', None)
+        memory = self.get_argument('memory', None)
+        app_log.warning(f"gpuModel:{gpuModel}")
         gpu = 'gpu_false'
         if (match := re.search('(.*)(gpu_.*)', spec)) is not None:
             spec = match.group(1)
             gpu = match.group(2)
             app_log.warning(f"gpu:{gpu}")
         #app_log.warning(f"gpu1:{gpu}")
-        self.gpu = gpu
+        self.resource_requests = {
+                "gpuModel": gpuModel,
+                "gpuCount": gpuCount,
+                "qos": qos,
+                "cpu": cpu,
+                "memory": memory
+                }
 
         # Verify if the provider is valid for EventSource.
         # EventSource cannot handle HTTP errors, so we must validate and send
@@ -713,7 +725,7 @@ class BuildHandler(BaseHandler):
                     "binder_launch_host": self.binder_launch_host,
                     "binder_request": self.binder_request,
                     "binder_persistent_request": self.binder_persistent_request,
-                    "request_gpu": self.gpu
+                    "resource_requests": self.resource_requests
                 }
                 server_info = await launcher.launch(
                     image=self.image_name,
