@@ -81,10 +81,21 @@
         </div>
 
         <div class="form-row row">
-          <div class="form-group col-md-1">
+          <!--div class="form-group col-md-1">
              <div class="input-group">
 		     <img id="badge" src="{{static_url("images/resources.svg")}}" alt="Binder badge logo">
              </div>
+          </div-->
+          <div  class="form-group col-md-2">
+                  <label for="sites">
+                      Sites
+                  </label>
+                  <div class="input-group">
+                    <select name="sites" id="sites" class="form-control">
+                      <option value="UC AF">UC AF</option>
+                      <option value="UC riverdev">UC riverdev</option>
+                    </select>
+                  </div>
           </div>
 
           <div  class="form-group col-md-4">
@@ -123,9 +134,21 @@
 	       <span class="input-group-addon">GB</span>
              </div>
           </div>
-          <div class="form-group col-md-2">
+          <div class="form-group col-md-1">
             <div class="btn-group" id="launch-buttons">
               <button id="submit" class="btn-submit" type="submit">launch</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row row">
+          <div class="form-group col-md-4">
+            <div class="btn-group">
+              <!--button id="Jupyterhub" class="btn-submit" type="submit">Take me to Jupyterhub</button-->
+              <a href="https://jupyterhub.af.uchicago.edu" target="_blank">
+                  <!--button>Take me to Jupyterhub</button-->
+		  Take me to Jupyterhub
+              </a>
             </div>
           </div>
         </div>
@@ -245,8 +268,9 @@
 document.addEventListener("DOMContentLoaded", async () => {
   await indexMain();
   console.log("DOM loaded!");
-  const response = await fetch("{{resources_url}}");
-  const json = await response.json();
+
+  var response = await fetch("{{resources_url}}");
+  var json = await response.json();
   console.log(json);
 
   var gpuSelect = document.getElementById("gpu-product");
@@ -261,6 +285,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     gpuSelect.add(option);
   }
   console.log(document.getElementById('gpu-product'))
+
+  const baseUrl = new URL(
+    document.getElementById("base-url").dataset.url,
+    document.location.origin,
+  );
+  const configUrl = new URL("_spawnerconfig", baseUrl);
+  response = await fetch(configUrl);
+  json = await response.json();
+  console.log(json);
+
+  var sites = document.getElementById("sites");
+  sites.options.length = 0;
+  for(var i = 0; i < json.sites.length; i++) {
+    var option = document.createElement("option");
+    option.value = json.sites[i]["name"];
+    console.log(option.value);
+    option.text = json.sites[i]["name"];
+    sites.add(option);
+  }
+  console.log(document.getElementById('sites'))
+
 });
 document.getElementById('qos').onchange = function() {
     document.getElementById('memory').disabled = !this.checked;

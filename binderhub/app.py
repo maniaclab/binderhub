@@ -46,6 +46,7 @@ from .build import BuildExecutor, KubernetesBuildExecutor, KubernetesCleaner
 from .builder import BuildHandler
 from .resources import ResourcesHandler
 from .config import ConfigHandler
+from .spawner_config import SpawnerConfigHandler
 from .events import EventLog
 from .health import HealthHandler, KubernetesHealthHandler
 from .launcher import Launcher
@@ -976,6 +977,7 @@ class BinderHub(Application):
             (r"/build/([^/]+)/(.+)", BuildHandler),
             (r"/health", self.health_handler_class, {"hub_url": self.hub_url_local}),
             (r"/_config", ConfigHandler),
+            (r"/_spawnerconfig", SpawnerConfigHandler),
         ]
         if not self.enable_api_only_mode:
             # In API only mode the endpoints in the list below

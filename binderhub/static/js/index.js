@@ -204,7 +204,8 @@ function indexMain() {
             "&" + "gpuCount=" + formValues.gpuCount +
             "&" + "qos=" + formValues.qos +
             "&" + "cpu=" + formValues.cpu +
-            "&" + "memory=" + formValues.memory,
+            "&" + "memory=" + formValues.memory+
+            "&" + "site=" + formValues.site,
       log,
       fitAddon,
       formValues.path,

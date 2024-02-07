@@ -276,6 +276,7 @@ class BuildHandler(BaseHandler):
         qos = self.get_argument('qos', None)
         cpu = self.get_argument('cpu', None)
         memory = self.get_argument('memory', None)
+        site = self.get_argument('site', None)
         app_log.warning(f"gpuModel:{gpuModel}")
         gpu = 'gpu_false'
         if (match := re.search('(.*)(gpu_.*)', spec)) is not None:
@@ -288,7 +289,8 @@ class BuildHandler(BaseHandler):
                 "gpuCount": gpuCount,
                 "qos": qos,
                 "cpu": cpu,
-                "memory": memory
+                "memory": memory,
+                "site": site
                 }
 
         # Verify if the provider is valid for EventSource.

@@ -36,6 +36,7 @@ export function getBuildFormValues() {
     ref = "";
   }
   const path = $("#filepath").val().trim();
+  const site = $("#sites").val().trim();
   const gpuModel = $("#gpu-product").val().trim();
   const gpuCount = $("#gpuCount").val().trim();
   const qos = document.getElementById("qos").checked ? "Guaranteed" : "Burstable";
@@ -51,6 +52,7 @@ export function getBuildFormValues() {
     gpuCount: gpuCount,
     qos: qos,
     cpu: cpu,
-    memory: memory
+    memory: memory,
+    site: site
   };
 }
