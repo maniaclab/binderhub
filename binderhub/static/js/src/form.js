@@ -37,8 +37,8 @@ export function getBuildFormValues() {
   }
   const path = $("#filepath").val().trim();
   const site = $("#sites").val().trim();
-  const gpuModel = $("#gpu-product").val().trim();
-  const gpuCount = $("#gpuCount").val().trim();
+  const gpuModel = $("#gpu-product").val();
+  const gpuCount = $("#gpuCount").val();
   const qos = document.getElementById("qos").checked ? "Guaranteed" : "Burstable";
   const cpu = $("#cpu").val().trim();
   const memory = $("#memory").val().trim();
