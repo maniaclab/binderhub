@@ -283,7 +283,6 @@ class BuildHandler(BaseHandler):
             spec = match.group(1)
             gpu = match.group(2)
             app_log.warning(f"gpu:{gpu}")
-        #app_log.warning(f"gpu1:{gpu}")
         self.resource_requests = {
                 "gpuModel": gpuModel,
                 "gpuCount": gpuCount,
