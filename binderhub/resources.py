@@ -14,7 +14,8 @@ class ResourcesHandler(BaseHandler,LoggingConfigurable):
     try:
         kubernetes.config.load_incluster_config()
     except kubernetes.config.ConfigException:
-        kubernetes.config.load_kube_config()
+        #kubernetes.config.load_kube_config()
+        print("load incluster config exception")
     api = client.CoreV1Api()
 
     def generate_avail(self):

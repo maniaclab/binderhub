@@ -17,7 +17,8 @@ class SpawnerConfigHandler(BaseHandler):
     try:
         kubernetes.config.load_incluster_config()
     except kubernetes.config.ConfigException:
-        kubernetes.config.load_kube_config()
+        #kubernetes.config.load_kube_config()
+        print("load incluster config exception")
     api = client.CoreV1Api()
     secrets = api.list_namespaced_secret("binderhub")
     secret = next(s for s in secrets.items if s.metadata.name == "binderhub-values")
