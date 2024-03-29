@@ -5,6 +5,119 @@
 <meta id="badge-base-url" data-url="{{badge_base_url}}">
 <script src="{{static_url("dist/bundle.js")}}"></script>
 {{ super() }}
+    <!--link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round|Material+Icons+Sharp|Material+Icons+Two+Tone"
+      rel="stylesheet"
+    /-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Foldit:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />    
+    <!--style>
+      .navigation {
+        #width: 100%;
+        height: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: left;
+      }
+      .items {
+        height: fit-content;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        #background: rgb(40, 40, 40);
+	background: rgb(235, 236, 237);
+        #padding: 9px 20px;
+        #border-radius: 10mm;
+        position: relative;
+        max-width: 1000px;
+        width: fit-content;
+        overflow: hidden;
+        transition: 0.5s;
+      }
+      #close {
+        display: none;
+      }
+      .item {
+        #color: rgb(235, 237, 243);
+        #width: 40px;
+        height: 56px;
+        #border-radius: 10mm;
+        #background: rgb(77, 77, 77);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        #margin: 0 12px;
+        cursor: pointer;
+        overflow: hidden;
+        transition: 0.25s;
+      }
+      .item-title {
+        background: rgb(136, 0, 0);
+      }
+      .item .material-icons-outlined {
+        font-size: 24px;
+      }
+      .item .text {
+        font-family: poppins;
+        width: 0;
+        overflow: hidden;
+      }
+      input:checked + .item .text {
+        width: fit-content;
+      }
+      input:checked + .item {
+        width: fit-content;
+        border-radius: 10mm;
+        padding: 0 10px;
+        background: rgb(198, 247, 136);
+        color: rgb(40, 40, 40);
+      }
+      .item:hover {
+        background: white;
+        color: rgb(40, 40, 40);
+      }
+      .close-btn {
+        #color: rgb(235, 237, 243);
+	color: rgb(40, 40, 40);
+        cursor: pointer;
+        position: relative;
+        width: 40px;
+        height: 40px;
+      }
+      .close-btn::after {
+        content: "close";
+        font-family: "Material Icons";
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        font-size: 24px;
+        position: absolute;
+        text-align: center;
+        line-height: 40px;
+      }
+      #close:checked + .items {
+        max-width: 28px;
+      }
+      #close:checked + .items .item {
+        visibility: hidden;
+      }
+      #close:checked + .items .close-btn {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #close:checked + .items .close-btn::after {
+        #content: "fullscreen";
+        content: "settings";
+      }
+    </style-->
+
 {% endblock head %}
 
 {% block main %}
@@ -80,25 +193,20 @@
 
         </div>
 
-        <div class="form-row row">
-          <!--div class="form-group col-md-1">
-             <div class="input-group">
-		     <img id="badge" src="{{static_url("images/resources.svg")}}" alt="Binder badge logo">
-             </div>
-          </div-->
-          <div  class="form-group col-md-2">
+        <!--div class="form-row row">
+          <div  class="form-group col-md-4">
                   <label for="sites">
                       Sites
                   </label>
                   <div class="input-group">
-                    <select name="sites" id="sites" class="form-control">
+                    <select name="sites" id="sites" onchange="changeSite(this.value)" class="form-control">
                       <option value="UC AF">UC AF</option>
                       <option value="UC riverdev">UC riverdev</option>
                     </select>
                   </div>
           </div>
 
-          <div  class="form-group col-md-4">
+          <div  class="form-group col-md-8">
                   <label for="gpu-product">
                       GPU Model - name(avail/total)
                   </label>
@@ -112,8 +220,9 @@
                     </div>
                   </div>
           </div>
-
-          <div class="form-group col-md-1" style="width: 12.499999995%">
+	</div>
+        <div class="form-row row">
+          <div class="form-group col-md-2">
              <!label for="qos">QoS</label>
              <div class="input-group">
                <div class="checkbox">
@@ -121,7 +230,7 @@
                </div>
              </div>
           </div>
-          <div class="form-group col-md-2" style="width: 12.499999995%">
+          <div class="form-group col-md-2">
              <!label for="qos">CPUs</label>
              <div class="input-group">
                  <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=16 value=1 disabled>
@@ -134,22 +243,156 @@
 	       <span class="input-group-addon">GB</span>
              </div>
           </div>
-          <div class="form-group col-md-1">
-            <div class="btn-group" id="launch-buttons">
-              <button id="submit" class="btn-submit" type="submit">launch</button>
+        </div-->
+
+        <!--div class="form-row row">
+  	  <div class="form-group col-md-12">
+            <div class="navigation">
+              <input type="checkbox" name="" id="close" checked/>
+            
+              <div class="items">
+                <label for="sites" class="item">
+                  <div  >
+                          <label for="sites">
+                              Sites
+                          </label>
+                          <div class="input-group">
+                            <select name="sites" id="sites" onchange="changeSite(this.value)" class="form-control">
+                              <option value="UC AF">UC AF</option>
+                              <option value="UC riverdev">UC riverdev</option>
+                            </select>
+                          </div>
+                  </div>  
+                </label>
+                <label for="gpu-product" class="item">
+                  <div  >
+                          <label for="gpu-product">
+                              GPU Model - name(avail/total)
+                          </label>
+                          <div class="input-group">
+                            <select name="gpu-product" id="gpu-product" class="form-control">
+                              <option value="NVIDIA-GeForce-RTX-2080-Ti">NVIDIA GeForce RTX 2080 Ti</option>
+                              <option value="Tesla-V100-PCIE-16GB">NVIDIA Tesla V100</option>
+                            </select>
+                            <div class="input-group-btn" style="min-width:50px">
+                             <input v-model="instances" type="number" class="form-control" name="gpuCount" id="gpuCount" min="0" max="4" value="0" required/>
+                            </div>
+                          </div>
+                  </div>  
+                </label>
+		<label for="qos" class="item">
+                  <div>
+                     <!label for="qos">QoS</label>
+                     <div class="input-group">
+                       <div class="checkbox">
+                         <label><input type="checkbox" id="qos" name="qos">Guaranteed</label>
+                       </div>
+                     </div>
+                  </div>
+                </label>
+		<label for="cpu" class="item">
+                  <div >
+                     <!label for="cpu">CPUs</label>
+                     <div class="input-group">
+                         <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=16 value=1 disabled>
+                     </div>
+                  </div>
+                </label>
+		<label for="memory" class="item">
+                  <div >
+                     <!label for="memory">Memory</label>
+                     <div class="input-group">
+                       <input type="number" name="memory" id="memory" class="form-control" step="0.01" value=1.0 disabled>
+        	       <span class="input-group-addon">GB</span>
+                     </div>
+                  </div>
+                </label>
+        
+                <label for="close" class="close-btn"></label>
+              </div>
+	      <div id="n100">
+		Advanced Setting
+	      </div>
             </div>
           </div>
+	</div-->
+
+        <div class="form-row row">
+            <div class="dropdownmenu" id="toggle-advsetting-panel">
+		    <label>Advanced setting - sites and resource customizations <span id="adv-config-icon" class="glyphicon glyphicon-cog"></span> <!--span class="material-symbols-outlined">home</span--> <!--img id="badge" src="{{static_url("images/badge_logo.svg")}}" alt="Binder badge logo"--></label>
+              <!--a id="badge-link"></a-->
+              <a href="#" title="show advanced settings"><span id="advsetting-panel-caret" class="glyphicon glyphicon-triangle-right"></span></a>
+            </div>
+            <div id="advsetting-panel" class="hidden">
+              <div >
+                <div  class="form-group col-md-4">
+                        <label for="sites">
+                            Sites
+                        </label>
+                        <div class="input-group">
+                          <select name="sites" id="sites" onchange="changeSite(this.value)" class="form-control">
+                            <option value="UC AF">UC AF</option>
+                            <option value="UC riverdev">UC riverdev</option>
+                          </select>
+                        </div>
+                </div>
+      
+                <div  class="form-group col-md-8">
+                        <label for="gpu-product">
+                            GPU Model - name(avail/total)
+                        </label>
+                        <div class="input-group">
+                          <select name="gpu-product" id="gpu-product" class="form-control">
+                            <option value="NVIDIA-GeForce-RTX-2080-Ti">NVIDIA GeForce RTX 2080 Ti</option>
+                            <option value="Tesla-V100-PCIE-16GB">NVIDIA Tesla V100</option>
+                          </select>
+                          <div class="input-group-btn" style="min-width:50px">
+                           <input v-model="instances" type="number" class="form-control" name="gpuCount" id="gpuCount" min="0" max="4" value="0" required/>
+                          </div>
+                        </div>
+                </div>
+              </div>	
+              <div >
+                <div class="form-group col-md-2">
+                   <!label for="qos">QoS</label>
+                   <div class="input-group">
+                     <div class="checkbox">
+                       <label><input type="checkbox" id="qos" name="qos">Guaranteed</label>
+                     </div>
+                   </div>
+                </div>
+                <div class="form-group col-md-2">
+                   <!label for="qos">CPUs</label>
+                   <div class="input-group">
+                       <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=16 value=1 disabled>
+                   </div>
+                </div>
+                <div class="form-group col-md-2">
+                   <!label for="qos">Memory</label>
+                   <div class="input-group">
+                     <input type="number" name="memory" id="memory" class="form-control" step="0.01" value=1.0 disabled>
+                     <span class="input-group-addon">GB</span>
+                   </div>
+                </div>
+              </div>
+            </div>
         </div>
 
         <div class="form-row row">
+          <div class="form-group col-md-2" style="margin-top: 8px;">
+            <button id="submit" class="btn-submit" type="submit">launch</button>
+          </div>
+	</div>
+
+        <div class="form-row row">
           <div class="form-group col-md-4">
-            <div class="btn-group">
+            <!--div class="btn-group"-->
               <!--button id="Jupyterhub" class="btn-submit" type="submit">Take me to Jupyterhub</button-->
-              <a href="https://jupyterhub.af.uchicago.edu" target="_blank">
+              <a href="jupyter" id ="hub-link" target="_blank">
                   <!--button>Take me to Jupyterhub</button-->
 		  Take me to Jupyterhub
               </a>
-            </div>
+            <!--/div-->
           </div>
         </div>
 
@@ -264,52 +507,150 @@
 
 {% block footer %}
 {{ super () }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script type="text/javascript">
+/*
+ * Dict holding cached values of API request to _config endpoint
+ */
+let siteList = []; 
+
+function setGpus(siteName) {
+  //console.log(siteName)
+  var gpuSelect = document.getElementById("gpu-product");
+  gpuSelect.options.length = 0;
+
+  const site = siteList.find((e) => e["name"] == siteName)
+  let gpus = [];
+  if ( ("resources" in site) && ("gpu" in site["resources"]) ){
+    gpus = site["resources"]["gpu"];
+  } else {
+    return;
+  }
+  //console.log(gpus)
+  
+  for(var i = 0; i < gpus.length; i++) {
+    var option = document.createElement("option");
+    option.value = gpus[i]["product"];
+    if (gpus[i]["available"] == 0) {
+        option.disabled = "disabled"}
+    //console.log(option.value);
+    option.text = gpus[i]["product"] + "(" +gpus[i]["available"].toString()+"/"+ gpus[i]["count"].toString() + ")";
+    gpuSelect.add(option);
+  }
+}
+
+function changeSite(site) {
+  setGpus(site)
+}
+
+function setSites(siteList) {
+  var sites = document.getElementById("sites");
+  sites.options.length = 0;
+  for(var i = 0; i < siteList.length; i++) {
+    var option = document.createElement("option");
+    option.value = siteList[i]["name"];
+    console.log(option.value);
+    option.text = siteList[i]["name"];
+    sites.add(option);
+  }
+}
+
+/**
+ * Update siteList and set the site List 
+ *
+ * @param {URL} url that serves the sites information
+ */
+function updateSitesList(url) {
+  if (siteList.length === 0) {
+    fetch(url).then((resp) => {
+      resp.json().then((sites) => {
+         siteList = sites;
+         setSites(siteList);
+      });
+    });
+  } else {
+    setSites(siteList);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await indexMain();
   console.log("DOM loaded!");
-
-  var response = await fetch("{{resources_url}}");
-  var json = await response.json();
-  console.log(json);
-
-  var gpuSelect = document.getElementById("gpu-product");
-  gpuSelect.options.length = 0;
-  for(var i = 0; i < json.data.length; i++) {
-    var option = document.createElement("option");
-    option.value = json.data[i]["product"];
-    if (json.data[i]["available"] == 0) {
-        option.disabled = "disabled"}
-    console.log(option.value);
-    option.text = json.data[i]["product"] + "(" +json.data[i]["available"].toString()+"/"+ json.data[i]["count"].toString() + ")";
-    gpuSelect.add(option);
-  }
-  console.log(document.getElementById('gpu-product'))
 
   const baseUrl = new URL(
     document.getElementById("base-url").dataset.url,
     document.location.origin,
   );
   const configUrl = new URL("_spawnerconfig", baseUrl);
-  response = await fetch(configUrl);
-  json = await response.json();
-  console.log(json);
+  var response = await fetch(configUrl);
+  var json = await response.json();
+  //console.log(json);
+  siteList = json.sites;
+  document.getElementById("hub-link").href=json.hub_connect_url;
+  setSites(siteList);
 
-  var sites = document.getElementById("sites");
-  sites.options.length = 0;
-  for(var i = 0; i < json.sites.length; i++) {
-    var option = document.createElement("option");
-    option.value = json.sites[i]["name"];
-    console.log(option.value);
-    option.text = json.sites[i]["name"];
-    sites.add(option);
-  }
-  console.log(document.getElementById('sites'))
+  response = await fetch("{{resources_url}}");
+  json = await response.json();
+  siteList[0]['resources'] = {};
+  siteList[0]['resources']['gpu'] = json.data
+  console.log(siteList);
+
+  setGpus(siteList[0]["name"]);
 
 });
+
+async function autoRefresh() {
+    //window.location = window.location.href;
+  const baseUrl = new URL(
+    document.getElementById("base-url").dataset.url,
+    document.location.origin,
+  );
+  const configUrl = new URL("_spawnerconfig", baseUrl);
+  var response = await fetch(configUrl);
+  var json = await response.json();
+  //console.log(json);
+  siteList = json.sites;
+  //document.getElementById("hub-link").href=json.hub_connect_url;
+  //setSites(siteList);
+
+  response = await fetch("{{resources_url}}");
+  json = await response.json();
+  siteList[0]['resources'] = {};
+  siteList[0]['resources']['gpu'] = json.data
+  //console.log(siteList);
+}
+
+setInterval('autoRefresh()', 10000);
+
 document.getElementById('qos').onchange = function() {
     document.getElementById('memory').disabled = !this.checked;
     document.getElementById('cpu').disabled = !this.checked;
 };
+
+$("#close").click(function(){
+  //console.log("clicked")
+  if( $("#close").is(":checked")){
+    $("#n100").show();
+  } else {
+    $("#n100").hide();
+  }
+});
+
+$("#toggle-advsetting-panel").on("click", function () {
+  const advSettingPanel = $("#advsetting-panel");
+  if (advSettingPanel.hasClass("hidden")) {
+    advSettingPanel.removeClass("hidden");
+    $("#advsetting-panel-caret").removeClass("glyphicon-triangle-right");
+    $("#advsetting-panel-caret").addClass("glyphicon-triangle-bottom");
+  } else {
+    advSettingPanel.addClass("hidden");
+    $("#advsetting-panel-caret").removeClass("glyphicon-triangle-bottom");
+    $("#advsetting-panel-caret").addClass("glyphicon-triangle-right");
+  }
+
+  return false;
+});
+
+
 </script>
 {% endblock footer %}

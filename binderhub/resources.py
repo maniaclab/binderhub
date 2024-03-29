@@ -11,17 +11,11 @@ from .base import BaseHandler
 class ResourcesHandler(BaseHandler,LoggingConfigurable):
     """Serve Resource availability"""
 
-    api = Any(
-        help="Kubernetes API object to make requests (kubernetes.client.CoreV1Api())",
-    )
-
-    @default("api")
-    def _default_api(self):
-        try:
-            kubernetes.config.load_incluster_config()
-        except kubernetes.config.ConfigException:
-            kubernetes.config.load_kube_config()
-        return client.CoreV1Api()
+    try:
+        kubernetes.config.load_incluster_config()
+    except kubernetes.config.ConfigException:
+        kubernetes.config.load_kube_config()
+    api = client.CoreV1Api()
 
     def generate_avail(self):
         #self.log.info("expensive to be called")
@@ -72,12 +66,7 @@ def get_gpu_availability(product=None, memory=None, ttl_hash=None):
 
     gpus = dict()
 
-    try:
-        kubernetes.config.load_incluster_config()
-    except kubernetes.config.ConfigException:
-        kubernetes.config.load_kube_config()
-    api= client.CoreV1Api()
-    #api = self.api
+    api = ResourcesHandler.api
 
     if product:
         nodes = api.list_node(label_selector='gpu=true,nvidia.com/gpu.product=%s' %product)
