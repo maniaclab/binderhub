@@ -19,12 +19,15 @@ class SpawnerConfigHandler(BaseHandler):
     except kubernetes.config.ConfigException:
         #kubernetes.config.load_kube_config()
         print("load incluster config exception")
-    api = client.CoreV1Api()
-    secrets = api.list_namespaced_secret("binderhub")
-    secret = next(s for s in secrets.items if s.metadata.name == "binderhub-values")
-    hvstring=base64.b64decode(secret.data.get("values.yaml"))
-    harborvalues=yaml.load(hvstring, Loader=yaml.SafeLoader)
-    apitoken=harborvalues.get("jupyterhub",{}).get("hub",{}).get("services",{}).get("binder-manager",{}).get("apiToken","")
+    try: 
+        api = client.CoreV1Api()
+        secrets = api.list_namespaced_secret("binderhub")
+        secret = next(s for s in secrets.items if s.metadata.name == "binderhub-values")
+        hvstring=base64.b64decode(secret.data.get("values.yaml"))
+        harborvalues=yaml.load(hvstring, Loader=yaml.SafeLoader)
+        apitoken=harborvalues.get("jupyterhub",{}).get("hub",{}).get("services",{}).get("binder-manager",{}).get("apiToken","")
+    except:
+        print("apitoken exception")
 
     def generate_config(self):
         """reads spawner config from configuration and add in live gpu availability data"""
