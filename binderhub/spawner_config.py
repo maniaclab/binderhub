@@ -91,9 +91,10 @@ def get_gpu_usage(users):
     for u in users:
         servers = u.get("servers", {})
         for k, v in servers.items():
-            if v["ready"] and int(v.get("user_options", {}).get("resource_requests",{}).get("gpuCount", 0))>0:
+            # None is passed when the no gpu is requested
+            if v["ready"] and v.get("user_options", {}).get("resource_requests",{}).get("gpuCount"):
                 resources = v.get("user_options", {}).get("resource_requests")
-                gpu_count = int(resources.get("gpuCount", 0))
+                gpu_count = int(resources.get("gpuCount"))
                 gpu_model = resources.get("gpuModel")
                 site = v.get("state",{}).get("site")
                 if not sites.get(site):
