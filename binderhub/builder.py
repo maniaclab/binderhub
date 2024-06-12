@@ -271,12 +271,14 @@ class BuildHandler(BaseHandler):
         self.check_build_token(build_token, f"{provider_prefix}/{spec}")
         self.check_rate_limit()
  
-        gpuModel = self.get_argument('gpuModel', None)
-        gpuCount = self.get_argument('gpuCount', None)
-        qos = self.get_argument('qos', None)
-        cpu = self.get_argument('cpu', None)
-        memory = self.get_argument('memory', None)
-        site = self.get_argument('site', None)
+        cudaMajor = self.get_argument('cudaMajor', "")
+        cudaMinor = self.get_argument('cudaMinor', "")
+        gpuModel = self.get_argument('gpuModel', "")
+        gpuCount = self.get_argument('gpuCount', 0)
+        qos = self.get_argument('qos', "")
+        cpu = self.get_argument('cpu', "")
+        memory = self.get_argument('memory', "")
+        site = self.get_argument('site', "")
         app_log.warning(f"gpuModel:{gpuModel}")
         gpu = 'gpu_false'
         if (match := re.search('(.*)(gpu_.*)', spec)) is not None:
@@ -284,6 +286,8 @@ class BuildHandler(BaseHandler):
             gpu = match.group(2)
             app_log.warning(f"gpu:{gpu}")
         self.resource_requests = {
+                "cudaMajor": cudaMajor,
+                "cudaMinor": cudaMinor,
                 "gpuModel": gpuModel,
                 "gpuCount": gpuCount,
                 "qos": qos,

@@ -64,6 +64,15 @@ class ParameterizedMainHandler(BaseHandler):
             # maybe we should catch a special InvalidSpecError here
             raise HTTPError(400, str(e))
 
+        cudaMajor = self.get_argument('cudaMajor', '')
+        cudaMinor = self.get_argument('cudaMinor', '')
+        gpuModel = self.get_argument('gpuModel', '')
+        gpuCount = self.get_argument('gpuCount', 0)
+        qos = self.get_argument('qos', '')
+        cpu = self.get_argument('cpu', '')
+        memory = self.get_argument('memory', '')
+        site = self.get_argument('site', '')
+        #provider_spec2 = ( f"{provider_prefix}/{spec}?gpuModel={gpuModel}&amp;gpuCount={gpuCount}&amp;site={site}")
         provider_spec = f"{provider_prefix}/{spec}"
         social_desc = f"{SPEC_NAMES[provider_prefix]}: {spec}"
         nbviewer_url = None
@@ -124,6 +133,14 @@ class ParameterizedMainHandler(BaseHandler):
             google_analytics_code=self.settings["google_analytics_code"],
             google_analytics_domain=self.settings["google_analytics_domain"],
             extra_footer_scripts=self.settings["extra_footer_scripts"],
+            cudaMajor=cudaMajor,
+            cudaMinor=cudaMinor,
+            gpuModel=gpuModel,
+            gpuCount=gpuCount,
+            qos=qos,
+            cpu=cpu,
+            memory=memory,
+            site=site,
         )
 
 

@@ -202,6 +202,8 @@ function indexMain() {
       formValues.providerPrefix + "/" + formValues.repo + "/" + formValues.ref + 
             "?" + "gpuModel=" + formValues.gpuModel +
             "&" + "gpuCount=" + formValues.gpuCount +
+            "&" + "cudaMajor=" + formValues.cudaMajor +
+            "&" + "cudaMinor=" + formValues.cudaMinor +
             "&" + "qos=" + formValues.qos +
             "&" + "cpu=" + formValues.cpu +
             "&" + "memory=" + formValues.memory+

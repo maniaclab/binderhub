@@ -29,26 +29,25 @@ class SpawnerConfigHandler(BaseHandler):
     except:
         print("apitoken exception")
 
-    def generate_config(self):
-        """reads spawner config from configuration and add in live gpu availability data"""
-        config = dict()
-        with open("/etc/binderhub/jhub_spawner_config.yaml",'r') as file:
-            config = yaml.safe_load(file)
-
-        # count usage and update the data
-        usage = update_gpu_usage(ttl_hash=get_ttl_hash()) 
-
-        sites = config.get("sites", [])
-        for site_name, gpu_usage in usage.items():
-            site =  next((s for s in sites if s['name'] == site_name), {})
-            for model, count in gpu_usage.items():
-                gpu = next((g for g in site.get("resources",{}).get('gpu',[]) if g['product'] == model), {})
-                gpu['available'] = gpu.get('count', 0) - count        
-
-        return config
-
     async def get(self):
-        self.write(self.generate_config())
+        self.write(generate_config())
+
+def generate_config():
+    """reads spawner config from configuration and add in live gpu availability data"""
+    config = dict()
+    with open("/etc/binderhub/jhub_spawner_config.yaml",'r') as file:
+        config = yaml.safe_load(file)
+
+    # count usage and update the data
+    usage = update_gpu_usage(ttl_hash=get_ttl_hash())
+
+    sites = config.get("sites", [])
+    for site_name, gpu_usage in usage.items():
+        site =  next((s for s in sites if s['name'] == site_name), {})
+        for model, count in gpu_usage.items():
+            gpu = next((g for g in site.get("resources",{}).get('gpu',[]) if g['product'] == model), {})
+            gpu['available'] = gpu.get('count', 0) - count
+    return config
 
 def get_ttl_hash(seconds=10):
   """Return the same value withing `seconds` time period"""
@@ -90,6 +89,7 @@ def get_gpu_usage(users):
     sites={}
     for u in users:
         servers = u.get("servers", {})
+        #print(servers)
         for k, v in servers.items():
             # None is passed when the no gpu is requested
             if v["ready"] and v.get("user_options", {}).get("resource_requests",{}).get("gpuCount"):

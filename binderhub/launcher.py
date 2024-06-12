@@ -21,6 +21,7 @@ from traitlets import Bool, Integer, Unicode, default
 from traitlets.config import LoggingConfigurable
 
 from .utils import url_path_join
+from .spawner_config import generate_config
 
 # pattern for checking if it's an ssh repo and not a URL
 # used only after verifying that `://` is not present
@@ -190,6 +191,9 @@ class Launcher(LoggingConfigurable):
         """
         # TODO: validate the image argument?
 
+        #get gpu availability data
+        config = generate_config()
+
         # Matches the escaping that JupyterHub does https://github.com/jupyterhub/jupyterhub/blob/c00c3fa28703669b932eb84549654238ff8995dc/jupyterhub/user.py#L427
         escaped_username = quote(username, safe="@~")
         if self.create_user:
@@ -223,6 +227,21 @@ class Launcher(LoggingConfigurable):
             # authentication is enabled with named servers
             # check if user has already reached to the limit of named servers
             user_data = await self.get_user_data(escaped_username)
+            #print(user_data["servers"])
+            #find the server with the same image, there could be multiple of that from different ways of starting up servers
+            try:
+                server = next(v for k,v in user_data.get("servers", {}).items() if v.get("user_options",{}).get("image") == image)
+            except:
+                server = None
+            if server and config.get("single_instance_perImg", True):
+                raise web.HTTPError(
+                    409,
+                    "User {} already has a named server {} for repo {}."
+                    "  One must be deleted before a new server can be created".format(
+                        username, server.get("name"), server.get("user_options",{}).get("repo_url")
+                    ),
+                )
+
             len_named_spawners = len([s for s in user_data["servers"] if s != ""])
             if self.named_server_limit_per_user <= len_named_spawners:
                 raise web.HTTPError(
@@ -247,6 +266,52 @@ class Launcher(LoggingConfigurable):
             .decode("ascii")
             .rstrip("=\n"),
         }
+
+        target_site = extra_args.get("resource_requests",{}).get("site")
+        if target_site:
+            try:
+                site = next(s for s in config.get("sites",[]) if s["name"] == target_site)
+            except:
+                #site specified but couldn't be found, that's an error
+                raise web.HTTPError(
+                    409,
+                    "site {} not in available sites: {}."
+                    " Please double check!".format(
+                     target_site,  [s["name"] for s in config.get("sites",[])]
+                    ),
+                )
+        else: 
+            #site not specified, which means it's the local site
+            try:
+                site = next(s for s in config.get("sites",[]) if s.get("kubernetes_context","") == "")
+            except:
+                print("local site not configured!")
+                site= {}
+
+        requested_gpuModel = extra_args.get("resource_requests",{}).get("gpuModel","")
+        requested_gpuCount = extra_args.get("resource_requests",{}).get("gpuCount", 0)
+
+        if int(requested_gpuCount) > 0 and requested_gpuModel:
+            try:
+                gpu = next(g for g in site.get("resources", {}).get("gpu",[]) if g.get("product","") == requested_gpuModel)
+            except:
+                raise web.HTTPError(
+                    409,
+                    "GPU model {} is not available from site {}."
+                    " Please check the web dropdown for available models".format(
+                        requested_gpuModel, site["name"]
+                    ),
+                )
+
+            if gpu["available"] < int(requested_gpuCount):
+                raise web.HTTPError(
+                    409,
+                    "request {} GPU model {} from site {} can't be fullfiled."
+                    " There are a total of {} gpu {} offered and only {} available".format(
+                        requested_gpuCount, requested_gpuModel, site["name"], gpu["count"], requested_gpuModel, gpu["available"]
+                    ),
+                )
+
         if extra_args:
             data.update(extra_args)
 

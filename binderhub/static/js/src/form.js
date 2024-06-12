@@ -37,6 +37,8 @@ export function getBuildFormValues() {
   }
   const path = $("#filepath").val().trim();
   const site = $("#sites").val().trim();
+  const cudaMajor = $("#cudaMajor").val();
+  const cudaMinor = $("#cudaMinor").val();
   const gpuModel = $("#gpu-product").val();
   const gpuCount = $("#gpuCount").val();
   const qos = document.getElementById("qos").checked ? "Guaranteed" : "Burstable";
@@ -48,6 +50,8 @@ export function getBuildFormValues() {
     ref: ref,
     path: path,
     pathType: getPathType(),
+    cudaMajor: cudaMajor,
+    cudaMinor: cudaMinor,
     gpuModel: gpuModel,
     gpuCount: gpuCount,
     qos: qos,

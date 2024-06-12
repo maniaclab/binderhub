@@ -31,10 +31,10 @@
 <div id="log-container" class="panel panel-default on-build hidden row">
   <div id="toggle-logs" class="panel-heading">
     Build logs
-    <button type="button" class="btn btn-link btn-xs pull-right toggle">show</button>
+    <button type="button" class="btn btn-link btn-xs pull-right toggle">hide</button>
     <a id="view-raw-logs" class="btn btn-link btn-xs pull-right" target="_blank">view raw</a>
   </div>
-  <div class="panel-body hidden">
+  <div class="panel-body">
     <div id="log"></div>
   </div>
 </div>
@@ -60,7 +60,10 @@ Your binder will open automatically when it is ready.
 {% block footer %}
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadingMain("{{provider_spec}}");
+ console.log("provider_spec:");
+ console.log("{{ provider_spec }}");
+  await loadingMain("{{ "%s?gpuModel=%s&site=%s&gpuCount=%s&cudaMajor=%s&cudaMinor=%s&qos=%s&cpu=%s&memory=%s" | format(provider_spec,gpuModel,site,gpuCount,cudaMajor,cudaMinor,qos,cpu,memory) | safe }}");
+  //await loadingMain("gh/fengpinghu/myfirstbinder/HEAD?gpuCount=1&site=nrp");
 })
 </script>
 {% endblock footer %}
