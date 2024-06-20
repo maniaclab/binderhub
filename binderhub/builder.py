@@ -741,6 +741,9 @@ class BuildHandler(BaseHandler):
                     event_callback=handle_progress_event,
                 )
             except Exception as e:
+                if type(e).__name__ == "HTTPError" and e.status_code == 403:
+                    # raise immediately if it's 403
+                    raise
                 duration = time.perf_counter() - launch_starttime
                 if i + 1 == launcher.retries:
                     status = "failure"

@@ -235,17 +235,17 @@ class Launcher(LoggingConfigurable):
                 server = None
             if server and config.get("single_instance_perImg", True):
                 raise web.HTTPError(
-                    409,
+                    403,
                     "User {} already has a named server {} for repo {}."
-                    "  One must be deleted before a new server can be created".format(
-                        username, server.get("name"), server.get("user_options",{}).get("repo_url")
+                    "  Please see your Jupyter hub home({}) to see (and connect) to already started servers".format(
+                        username, server.get("name"), server.get("user_options",{}).get("repo_url"), config.get("hub_connect_url","jupyterhub")
                     ),
                 )
 
             len_named_spawners = len([s for s in user_data["servers"] if s != ""])
             if self.named_server_limit_per_user <= len_named_spawners:
                 raise web.HTTPError(
-                    409,
+                    403,
                     "User {} already has the maximum of {} named servers."
                     "  One must be deleted before a new server can be created".format(
                         username, self.named_server_limit_per_user
@@ -274,7 +274,7 @@ class Launcher(LoggingConfigurable):
             except:
                 #site specified but couldn't be found, that's an error
                 raise web.HTTPError(
-                    409,
+                    403,
                     "site {} not in available sites: {}."
                     " Please double check!".format(
                      target_site,  [s["name"] for s in config.get("sites",[])]
@@ -296,7 +296,7 @@ class Launcher(LoggingConfigurable):
                 gpu = next(g for g in site.get("resources", {}).get("gpu",[]) if g.get("product","") == requested_gpuModel)
             except:
                 raise web.HTTPError(
-                    409,
+                    403,
                     "GPU model {} is not available from site {}."
                     " Please check the web dropdown for available models".format(
                         requested_gpuModel, site["name"]
@@ -305,7 +305,7 @@ class Launcher(LoggingConfigurable):
 
             if gpu["available"] < int(requested_gpuCount):
                 raise web.HTTPError(
-                    409,
+                    403,
                     "request {} GPU model {} from site {} can't be fullfiled."
                     " There are a total of {} gpu {} offered and only {} available".format(
                         requested_gpuCount, requested_gpuModel, site["name"], gpu["count"], requested_gpuModel, gpu["available"]
