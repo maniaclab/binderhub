@@ -97,7 +97,7 @@ class ParameterizedMainHandler(BaseHandler):
 
             # Check if the nbviewer URL is valid and would display something
             # useful to the reader, if not we don't show it
-            client = AsyncHTTPClient()
+            client = AsyncHTTPClient(force_instance=True)
             # quote any unicode characters in the URL
             proto, rest = nbviewer_url.split("://")
             rest = urllib.parse.quote(rest)

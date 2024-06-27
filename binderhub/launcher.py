@@ -109,7 +109,7 @@ class Launcher(LoggingConfigurable):
         retry_delay = self.retry_delay
         for i in range(1, self.retries + 1):
             try:
-                return await AsyncHTTPClient().fetch(req)
+                return await AsyncHTTPClient(force_instance=True).fetch(req)
             except HTTPError as e:
                 # swallow 409 errors on retry only (not first attempt)
                 if i > 1 and e.code == 409 and e.response:
@@ -190,7 +190,6 @@ class Launcher(LoggingConfigurable):
           - `token`: the token for the server
         """
         # TODO: validate the image argument?
-
         #get gpu availability data
         config = generate_config()
 
