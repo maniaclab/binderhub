@@ -22,6 +22,7 @@ from traitlets.config import LoggingConfigurable
 
 from .utils import url_path_join
 from .spawner_config import generate_config
+from .resources import get_gpu_availability
 
 # pattern for checking if it's an ssh repo and not a URL
 # used only after verifying that `://` is not present
@@ -291,6 +292,9 @@ class Launcher(LoggingConfigurable):
         requested_gpuCount = extra_args.get("resource_requests",{}).get("gpuCount", 0)
 
         if int(requested_gpuCount) > 0 and requested_gpuModel:
+            #local site
+            if site.get("kubernetes_context","") == "":
+                site["resources"] = {"gpu": get_gpu_availability()}
             try:
                 gpu = next(g for g in site.get("resources", {}).get("gpu",[]) if g.get("product","") == requested_gpuModel)
             except:
