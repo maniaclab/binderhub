@@ -283,7 +283,7 @@ class Launcher(LoggingConfigurable):
         else: 
             #site not specified, which means it's the local site
             try:
-                site = next(s for s in config.get("sites",[]) if s.get("kubernetes_context","") == "")
+                site = next(s for s in config.get("sites",[]) if s.get("local",False) == True)
             except:
                 print("local site not configured!")
                 site= {}
@@ -293,7 +293,7 @@ class Launcher(LoggingConfigurable):
 
         if int(requested_gpuCount) > 0 and requested_gpuModel:
             #local site
-            if site.get("kubernetes_context","") == "":
+            if site.get("local",False) == True:
                 site["resources"] = {"gpu": get_gpu_availability()}
             try:
                 gpu = next(g for g in site.get("resources", {}).get("gpu",[]) if g.get("product","") == requested_gpuModel)
