@@ -237,12 +237,12 @@ class BuildHandler(BaseHandler):
         )
         build_only = False
         if build_only_query_parameter.lower() == "true":
-            if not enable_api_only_mode:
-                raise HTTPError(
-                    status_code=400,
-                    log_message="Building but not launching is not permitted when"
-                    " the API only mode was not enabled by setting `enable_api_only_mode` to True. ",
-                )
+            #if not enable_api_only_mode:
+            #    raise HTTPError(
+            #        status_code=400,
+            #        log_message="Building but not launching is not permitted when"
+            #        " the API only mode was not enabled by setting `enable_api_only_mode` to True. ",
+            #    )
             build_only = True
 
         return build_only
