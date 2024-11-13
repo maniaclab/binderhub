@@ -373,7 +373,7 @@
                 <div class="form-group col-md-2">
                    <!label for="qos">CPUs</label>
                    <div class="input-group">
-                       <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=16 value=1 disabled>
+                       <input type="number" class="form-control" name="cpu" id="cpu" min=1 max=32 value=1 disabled>
                    </div>
                 </div>
                 <div class="form-group col-md-2">
@@ -545,6 +545,13 @@ function setGpus(siteName) {
     //console.log(option.value);
     option.text = gpus[i]["product"] + "(" +gpus[i]["available"].toString()+"/"+ gpus[i]["count"].toString() + ")";
     gpuSelect.add(option);
+  }
+  if (gpuSelect.options.length > 0){
+    var option = document.createElement("option");
+    option.value = ""
+    option.text = "Any"
+    gpuSelect.add(option,gpuSelect.options[0]);
+    gpuSelect.selectedIndex=0
   }
 }
 
