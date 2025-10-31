@@ -68,6 +68,8 @@ from .repoproviders import (
     ZenodoProvider,
 )
 from .utils import ByteSpecification, url_path_join
+from .spawner_config import SpawnerConfigHandler
+from .resources import ResourcesHandler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -999,6 +1001,8 @@ class BinderHub(Application):
             (r"/build/([^/]+)/(.+)", BuildHandler),
             (r"/health", self.health_handler_class, {"hub_url": self.hub_url_local}),
             (r"/api/repoproviders", RepoProvidersHandlers),
+            (r"/_spawnerconfig", SpawnerConfigHandler),
+            (r"/resources", ResourcesHandler, None,"resources"),
         ]
         if not self.enable_api_only_mode:
             # In API only mode the endpoints in the list below

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { FaviconUpdater } from "@jupyterhub/binderhub-react-components/FaviconUpdater.jsx";
 import { Spec, LaunchSpec } from "@jupyterhub/binderhub-client/spec.js";
 
+import AdvancedSettings from './AdvSetting.jsx'
+
 /**
  * @typedef {object} HomePageProps
  * @prop {import("../App.jsx").Provider[]} providers
@@ -21,6 +23,7 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
   const [isLaunching, setIsLaunching] = useState(false);
   const [spec, setSpec] = useState("");
   const [progressState, setProgressState] = useState(null);
+  const [advSetting, setAdvSetting] = useState({site: "local", qos: false, cpu: 1, memory: 1.0});
 
   useEffect(() => {
     const encodedRepo = selectedProvider.repo.urlEncode
@@ -30,13 +33,38 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
     if (selectedProvider.ref.enabled) {
       actualRef = ref !== "" ? ref : selectedProvider.ref.default;
     }
+    const searchParams = new URLSearchParams();
+    if (advSetting.gpuProduct) {
+      searchParams.append('gpuModel', advSetting.gpuProduct);
+    }
+    if (advSetting.gpuCount) {
+      searchParams.append('gpuCount', advSetting.gpuCount);
+    }
+    if (advSetting.qos) {
+      searchParams.append('qos', advSetting.qos);
+    }
+    if (advSetting.cpu) {
+      searchParams.append('cpu', advSetting.cpu);
+    }
+    if (advSetting.memory) {
+      searchParams.append('memory', advSetting.memory);
+    }
+    if (advSetting.sites) {
+      searchParams.append('site', advSetting.sites);
+    }
+    const queryString = searchParams.toString();
     setSpec(
       new Spec(
-        `${selectedProvider.id}/${encodedRepo}/${actualRef}`,
+        `${selectedProvider.id}/${encodedRepo}/${actualRef}?${queryString}`,
         new LaunchSpec(urlPath),
       ),
     );
-  }, [selectedProvider, repo, ref, urlPath]);
+  }, [selectedProvider, repo, ref, urlPath, advSetting]);
+
+  // Log on initial render and whenever 'count' changes
+  useEffect(() => {
+    console.log('advSetting has changed:', advSetting);
+  }, [advSetting]);
 
   return (
     <>
@@ -74,6 +102,11 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
         isLaunching={isLaunching}
         setIsLaunching={setIsLaunching}
       />
+      <AdvancedSettings 
+        className="bg-custom-dark p-4 pt-2 rounded-bottom"
+	values={advSetting}
+        onChange={setAdvSetting}
+	  />
       <BuilderLauncher
         className="bg-custom-dark p-4 pt-2 rounded-bottom"
         baseUrl={baseUrl}

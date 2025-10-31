@@ -275,6 +275,15 @@ class BuildHandler(BaseHandler):
         self.check_build_token(build_token, f"{provider_prefix}/{spec}")
         self.check_rate_limit()
 
+        qargs = self.request.query_arguments
+        adv_keys = ["qos","site","gpuModel","gpuCount","cpu","memory"]
+        adv_settings = {key: qargs[key] for key in adv_keys if key in qargs}
+        adv_settings['qos'] = "Guaranteed" if qargs.get("qos",False) else "Burstable"
+        if "gpuModel" in adv_settings and adv_settings["gpuModel"] == [b"Any"]:
+            del adv_settings["gpuModel"]
+        print(f"sdv_settings: {adv_settings}")
+        self.adv_settings = adv_settings
+
         # Verify if the provider is valid for EventSource.
         # EventSource cannot handle HTTP errors, so we must validate and send
         # error messages on the eventsource.
@@ -713,6 +722,7 @@ class BuildHandler(BaseHandler):
                     "binder_launch_host": self.binder_launch_host,
                     "binder_request": self.binder_request,
                     "binder_persistent_request": self.binder_persistent_request,
+                    "resource_requests": self.adv_settings,
                 }
                 server_info = await launcher.launch(
                     image=self.image_name,
