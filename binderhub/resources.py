@@ -21,7 +21,7 @@ class ResourcesHandler(BaseHandler,LoggingConfigurable):
     def generate_avail(self):
         #self.log.info("expensive to be called")
         avail = get_gpu_availability(ttl_hash=self.get_ttl_hash())
-        return {"data": avail}
+        return {"resources": avail}
 
     async def get(self):
         self.write(self.generate_avail())
