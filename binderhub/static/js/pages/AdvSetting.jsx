@@ -36,6 +36,9 @@ export default function AdvancedSettings({
         const data = await response.json();
         if (isMounted && Array.isArray(data.sites)) {
           setSiteOptions(data.sites);
+          // now local has a name, IMPORTANT - the first member of the sites list is the local site.
+          if (values.sites == "local" && data.sites.length >0)
+            values.sites = data.sites[0].name;
         }
       } catch (err) {
         console.error("Failed to fetch site list:", err);
@@ -46,6 +49,7 @@ export default function AdvancedSettings({
     }
 
     fetchSites();
+
     interval = setInterval(fetchSites, refreshInterval);
 
     return () => {
@@ -219,7 +223,7 @@ export default function AdvancedSettings({
                     className="form-control"
                     id="gpuCount"
                     min="0"
-                    max="4"
+                    max="32"
                     value={values.gpuCount || 0}
                     onChange={(e) =>
                       handleInputChange("gpuCount", parseInt(e.target.value))

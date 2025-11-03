@@ -23,7 +23,7 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
   const [isLaunching, setIsLaunching] = useState(false);
   const [spec, setSpec] = useState("");
   const [progressState, setProgressState] = useState(null);
-  const [advSetting, setAdvSetting] = useState({site: "local", qos: false, cpu: 1, memory: 1.0});
+  const [advSetting, setAdvSetting] = useState({sites: "local", qos: false, cpu: 1, memory: 1.0});
 
   useEffect(() => {
     const encodedRepo = selectedProvider.repo.urlEncode
