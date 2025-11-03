@@ -277,7 +277,7 @@ class BuildHandler(BaseHandler):
 
         qargs = self.request.query_arguments
         adv_keys = ["qos","site","gpuModel","gpuCount","cpu","memory"]
-        adv_settings = {key: qargs[key] for key in adv_keys if key in qargs}
+        adv_settings = {key: qargs[key][0].decode("utf-8") for key in adv_keys if key in qargs}
         adv_settings['qos'] = "Guaranteed" if qargs.get("qos",False) else "Burstable"
         if "gpuModel" in adv_settings and adv_settings["gpuModel"] == [b"Any"]:
             del adv_settings["gpuModel"]
