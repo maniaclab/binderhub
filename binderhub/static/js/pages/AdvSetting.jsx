@@ -37,7 +37,7 @@ export default function AdvancedSettings({
         if (isMounted && Array.isArray(data.sites)) {
           setSiteOptions(data.sites);
           // now local has a name, IMPORTANT - the first member of the sites list is the local site.
-          if (values.sites == "local" && data.sites.length >0)
+          if (values.sites === "local" && data.sites.length > 0)
             values.sites = data.sites[0].name;
         }
       } catch (err) {
@@ -49,7 +49,6 @@ export default function AdvancedSettings({
     }
 
     fetchSites();
-
     interval = setInterval(fetchSites, refreshInterval);
 
     return () => {
@@ -59,7 +58,7 @@ export default function AdvancedSettings({
   }, [badgeVisible, baseUrl, refreshInterval]);
 
   //
-  // Fetch resources for selected site periodically
+  // Fetch resources periodically for the selected site
   //
   useEffect(() => {
     if (!values.sites || siteOptions.length === 0) return;
@@ -84,11 +83,9 @@ export default function AdvancedSettings({
               resourceData = data.resources;
             }
           }
-        } else if (Array.isArray(selectedSite.resources.gpu)) {
+        } else if (Array.isArray(selectedSite.resources?.gpu)) {
           resourceData = selectedSite.resources.gpu;
         }
-
-	console.log("selectsite:",selectedSite);
 
         if (isMounted) {
           setResources(resourceData);
@@ -153,86 +150,92 @@ export default function AdvancedSettings({
           id="badge-container"
         >
           {/* ---- Site selection ---- */}
-          <div className="form-row row">
-            <div className="form-group col-md-4">
-              <label htmlFor="sites">Sites</label>
-              <div className="input-group">
-                <select
-                  id="sites"
-                  className="form-control"
-                  value={values.sites || ""}
-                  onChange={(e) => handleInputChange("sites", e.target.value)}
-                  disabled={loadingSites}
-                >
-                  {loadingSites ? (
-                    <option>Fetching site list...</option>
-                  ) : siteOptions.length > 0 ? (
-                    siteOptions.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))
-                  ) : (
-                    <option>No sites available</option>
-                  )}
-                </select>
-              </div>
-              {fetchError && (
-                <small className="text-danger">{fetchError}</small>
-              )}
-            </div>
-
-            {/* ---- GPU product ---- */}
-            <div className="form-group col-md-6">
-              <label htmlFor="gpu-product">GPU Model - name (avail/total)</label>
-              <div className="input-group">
-                <select
-                  id="gpu-product"
-                  className="form-control"
-                  value={values.gpuProduct || ""}
-                  onChange={(e) =>
-                    handleInputChange("gpuProduct", e.target.value)
-                  }
-                  disabled={loadingResources}
-                >
-                  {loadingResources ? (
-                    <option>Loading GPUs...</option>
-                  ) : gpuOptions.length > 0 ? (
-                    <>
-                      {anyAvailable && (
-                        <option value="Any">Any (auto-assign GPU)</option>
-                      )}
-                      {gpuOptions.map((gpu) => (
-                        <option
-                          key={gpu.product}
-                          value={gpu.product}
-                          disabled={gpu.available === 0}
-                        >
-                          {gpu.product} ({gpu.available}/{gpu.count})
-                        </option>
-                      ))}
-                    </>
-                  ) : (
-                    <option>No GPU info available</option>
-                  )}
-                </select>
-
-                <div className="input-group-btn" style={{ minWidth: "50px" }}>
-                  <input
-                    type="number"
+          {siteOptions.length > 1 && (
+            <div className="form-row row">
+              <div className="form-group col-md-4">
+                <label htmlFor="sites">Sites</label>
+                <div className="input-group">
+                  <select
+                    id="sites"
                     className="form-control"
-                    id="gpuCount"
-                    min="0"
-                    max="32"
-                    value={values.gpuCount || 0}
+                    value={values.sites || ""}
                     onChange={(e) =>
-                      handleInputChange("gpuCount", parseInt(e.target.value))
+                      handleInputChange("sites", e.target.value)
                     }
-                  />
+                    disabled={loadingSites}
+                  >
+                    {loadingSites ? (
+                      <option>Fetching site list...</option>
+                    ) : (
+                      siteOptions.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                {fetchError && (
+                  <small className="text-danger">{fetchError}</small>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ---- GPU product and count ---- */}
+          {gpuOptions.length > 0 && (
+            <div className="form-row row" style={{ marginTop: "1rem" }}>
+              <div className="form-group col-md-6">
+                <label htmlFor="gpu-product">
+                  GPU Model - name (avail/total)
+                </label>
+                <div className="input-group">
+                  <select
+                    id="gpu-product"
+                    className="form-control"
+                    value={values.gpuProduct || ""}
+                    onChange={(e) =>
+                      handleInputChange("gpuProduct", e.target.value)
+                    }
+                    disabled={loadingResources}
+                  >
+                    {loadingResources ? (
+                      <option>Loading GPUs...</option>
+                    ) : (
+                      <>
+                        {anyAvailable && (
+                          <option value="Any">Any (auto-assign GPU)</option>
+                        )}
+                        {gpuOptions.map((gpu) => (
+                          <option
+                            key={gpu.product}
+                            value={gpu.product}
+                            disabled={gpu.available === 0}
+                          >
+                            {gpu.product} ({gpu.available}/{gpu.count})
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </select>
+
+                  <div className="input-group-btn" style={{ minWidth: "80px" }}>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="gpuCount"
+                      min="0"
+                      max="32"
+                      value={values.gpuCount || 0}
+                      onChange={(e) =>
+                        handleInputChange("gpuCount", parseInt(e.target.value))
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* ---- QoS, CPU, Memory ---- */}
           <div className="form-row row" style={{ marginTop: "1rem" }}>
