@@ -73,6 +73,25 @@ class RepoLaunchUIHandler(UIHandler):
             algorithm="HS256",
         )
         self.page_config["buildToken"] = build_token
+
+        site = self.get_argument('site', "")
+        gpuModel = self.get_argument('gpuModel', "")
+        gpuCount = self.get_argument('gpuCount', "")
+        qos = self.get_argument('qos', "")
+        cpu = self.get_argument('cpu', "")
+        memory = self.get_argument('memory', "")
+        params = {
+            "site": site,
+            "gpuModel": gpuModel,
+            "gpuCount": gpuCount,
+            "qos": qos,
+            "cpu": cpu,
+            "memory": memory,
+        }
+        # Only include non-empty values
+        query = "&".join(f"{k}={v}" for k, v in params.items() if v)
+        self.page_config["resRequests"] = f"?{query}" if query else ""
+
         self.opengraph_title = (
             f"{self.repo_provider.display_config['displayName']}: {spec}"
         )

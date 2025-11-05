@@ -15,12 +15,12 @@ import { ErrorPage } from "@jupyterhub/binderhub-react-components/ErrorPage.jsx"
  * @param {LoadingPageProps} props
  * @returns
  */
-export function LoadingPage({ baseUrl, buildToken, provider }) {
+export function LoadingPage({ baseUrl, buildToken, resRequests, provider }) {
   const [progressState, setProgressState] = useState(null);
 
   const params = useParams();
   const partialSpec = params["0"];
-  const buildSpec = `${provider.id}/${partialSpec}`;
+  const buildSpec = `${provider.id}/${partialSpec}${resRequests}`;
 
   const searchParams = new URLSearchParams(useSearch());
 

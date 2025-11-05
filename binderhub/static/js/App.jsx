@@ -49,6 +49,7 @@ export const PUBLIC_BASE_URL = PAGE_CONFIG.publicBaseUrl
   : new URL(PAGE_CONFIG.baseUrl, window.location.href);
 
 const BUILD_TOKEN = PAGE_CONFIG.buildToken;
+const RES_REQUESTS = PAGE_CONFIG.resRequests;
 
 export function App({ routerHook }) {
   // Wouter's <Router> component requires *not* having trailing slash to function
@@ -88,6 +89,7 @@ export function App({ routerHook }) {
                   <LoadingPage
                     baseUrl={BASE_URL}
                     buildToken={BUILD_TOKEN}
+                    resRequests={RES_REQUESTS}
                     provider={p}
                   />
                 </Route>
