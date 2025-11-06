@@ -23,6 +23,9 @@ from traitlets.config import LoggingConfigurable
 
 from .utils import url_path_join
 
+from .spawner_config import generate_config
+from .resources import get_gpu_availability
+
 # pattern for checking if it's an ssh repo and not a URL
 # used only after verifying that `://` is not present
 _ssh_repo_pat = re.compile(r".*@.*\:")
@@ -190,6 +193,8 @@ class Launcher(LoggingConfigurable):
           - `token`: the token for the server
         """
         # TODO: validate the image argument?
+        #get gpu availability data
+        config = generate_config()
 
         # Matches the escaping that JupyterHub does https://github.com/jupyterhub/jupyterhub/blob/c00c3fa28703669b932eb84549654238ff8995dc/jupyterhub/user.py#L427
         escaped_username = quote(username, safe="@~")
@@ -218,7 +223,7 @@ class Launcher(LoggingConfigurable):
             user_data = await self.get_user_data(escaped_username)
             if server_name in user_data["servers"]:
                 raise web.HTTPError(
-                    409, f"User {username} already has a running server."
+                    403, f"User {username} already has a running server."
                 )
         elif self.named_server_limit_per_user > 0:
             # authentication is enabled with named servers
@@ -227,10 +232,25 @@ class Launcher(LoggingConfigurable):
             len_named_spawners = len([s for s in user_data["servers"] if s != ""])
             if self.named_server_limit_per_user <= len_named_spawners:
                 raise web.HTTPError(
-                    409,
+                    403,
                     "User {} already has the maximum of {} named servers."
                     "  One must be deleted before a new server can be created".format(
                         username, self.named_server_limit_per_user
+                    ),
+                )
+
+            #find the server with the same image, there could be multiple of that from different ways of starting up servers
+            try:
+                server = next(v for k,v in user_data.get("servers", {}).items() if v.get("user_options",{}).get("image") == image)
+            except:
+                server = None
+
+            if server and config.get("single_instance_perImg", True):
+                raise web.HTTPError(
+                    403,
+                    "User {} already has a named server {} for repo {}."
+                    "  Please see your Jupyter hub home({}) to see (and connect) to already started servers".format(
+                        username, server.get("name"), server.get("user_options",{}).get("repo_url"), config.get("hub_connect_url","jupyterhub")
                     ),
                 )
 
@@ -250,6 +270,55 @@ class Launcher(LoggingConfigurable):
         }
         if extra_args:
             data.update(extra_args)
+
+        config = generate_config()
+        target_site = extra_args.get("resource_requests",{}).get("site")
+        if target_site:
+            try:
+                site = next(s for s in config.get("sites",[]) if s["name"] == target_site)
+            except:
+                #site specified but couldn't be found, that's an error
+                raise web.HTTPError(
+                    403,
+                    "site {} not in available sites: {}."
+                    " Please double check!".format(
+                     target_site,  [s["name"] for s in config.get("sites",[])]
+                    ),
+                )
+        else:
+            #site not specified, which means it's the local site
+            try:
+                site = next(s for s in config.get("sites",[]) if s.get("local",False) == True)
+            except:
+                print("local site not configured!")
+                site= {}
+
+        requested_gpuModel = extra_args.get("resource_requests",{}).get("gpuModel","")
+        requested_gpuCount = extra_args.get("resource_requests",{}).get("gpuCount", 0)
+
+        if int(requested_gpuCount) > 0 and requested_gpuModel:
+            #local site
+            if site.get("local",False) == True:
+                site["resources"] = {"gpu": get_gpu_availability()}
+            try:
+                gpu = next(g for g in site.get("resources", {}).get("gpu",[]) if g.get("product","") == requested_gpuModel)
+            except:
+                raise web.HTTPError(
+                    403,
+                    "GPU model {} is not available from site {}."
+                    " Please check the web dropdown for available models".format(
+                        requested_gpuModel, site["name"]
+                    ),
+                )
+
+            if gpu["available"] < int(requested_gpuCount):
+                raise web.HTTPError(
+                    403,
+                    "request {} GPU model {} from site {} can't be fullfiled."
+                    " There are a total of {} gpu {} offered and only {} available".format(
+                        requested_gpuCount, requested_gpuModel, site["name"], gpu["count"], requested_gpuModel, gpu["available"]
+                    ),
+                )
 
         # server name to be used in logs
         _server_name = f" {server_name}" if server_name else ""
