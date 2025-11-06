@@ -13,13 +13,14 @@ export default function AdvancedSettings({
   const [loadingSites, setLoadingSites] = useState(false);
   const [loadingResources, setLoadingResources] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [hubUrl, setHubUrl] = useState(null); // <-- add this
 
   const handleInputChange = (field, value) => {
     onChange({ ...values, [field]: value });
   };
 
   //
-  // Fetch site list periodically
+  // Fetch site list and hub URL periodically
   //
   useEffect(() => {
     if (!badgeVisible) return;
@@ -34,11 +35,13 @@ export default function AdvancedSettings({
         const response = await fetch(`${baseUrl}_spawnerconfig`);
         if (!response.ok) throw new Error("Failed to fetch _spawnerconfig");
         const data = await response.json();
-        if (isMounted && Array.isArray(data.sites)) {
-          setSiteOptions(data.sites);
-          // now local has a name, IMPORTANT - the first member of the sites list is the local site.
-          if (values.sites === "local" && data.sites.length > 0)
-            values.sites = data.sites[0].name;
+        if (isMounted) {
+          if (Array.isArray(data.sites)) {
+            setSiteOptions(data.sites);
+            if (values.sites === "local" && data.sites.length > 0)
+              values.sites = data.sites[0].name;
+          }
+          if (data.hub_connect_url) setHubUrl(data.hub_connect_url); // <-- get hub URL
         }
       } catch (err) {
         console.error("Failed to fetch site list:", err);
@@ -79,9 +82,7 @@ export default function AdvancedSettings({
           const res = await fetch(`${baseUrl}resources`);
           if (res.ok) {
             const data = await res.json();
-            if (Array.isArray(data.resources)) {
-              resourceData = data.resources;
-            }
+            if (Array.isArray(data.resources)) resourceData = data.resources;
           }
         } else if (Array.isArray(selectedSite.resources?.gpu)) {
           resourceData = selectedSite.resources.gpu;
@@ -89,12 +90,9 @@ export default function AdvancedSettings({
 
         if (isMounted) {
           setResources(resourceData);
-
-          // Auto-select “Any” if applicable and gpuProduct not yet chosen
           const anyAvailable = resourceData.some((r) => r.available > 0);
-          if (anyAvailable && !values.gpuProduct) {
+          if (anyAvailable && !values.gpuProduct)
             handleInputChange("gpuProduct", "Any");
-          }
         }
       } catch (err) {
         console.error("Failed to fetch resources:", err);
@@ -113,9 +111,6 @@ export default function AdvancedSettings({
     };
   }, [values.sites, siteOptions, baseUrl, refreshInterval]);
 
-  //
-  // Derived GPU options
-  //
   const gpuOptions = resources.map((gpu) => ({
     product: gpu.product,
     available: gpu.available,
@@ -123,9 +118,6 @@ export default function AdvancedSettings({
   }));
   const anyAvailable = gpuOptions.some((gpu) => gpu.available > 0);
 
-  //
-  // JSX
-  //
   return (
     <form className={`d-flex flex-column gap-3 ${className}`}>
       <div className="card">
@@ -146,7 +138,9 @@ export default function AdvancedSettings({
         </div>
 
         <div
-          className={`card-body ${badgeVisible ? "" : "d-none"}`}
+          className={`card-body position-relative ${
+            badgeVisible ? "" : "d-none"
+          }`}
           id="badge-container"
         >
           {/* ---- Site selection ---- */}
@@ -294,6 +288,26 @@ export default function AdvancedSettings({
               </div>
             </div>
           </div>
+
+          {/* ---- JupyterHub Home link (bottom-right) ---- */}
+          {hubUrl && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                right: "15px",
+              }}
+            >
+              <a
+                href={hubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-link"
+              >
+                JupyterHub Home
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </form>
