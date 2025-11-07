@@ -5,7 +5,7 @@ export function AboutPage({ aboutMessage, binderVersion }) {
       <div>
         <p>
           This website is powered by{" "}
-          <a href="https://github.com/jupyterhub/binderhub">BinderHub</a> v
+          <a href="https://github.com/maniaclab/binderhub">BinderHub</a> v
           {binderVersion}
         </p>
         {aboutMessage && (
