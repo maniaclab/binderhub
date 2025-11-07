@@ -291,22 +291,35 @@ export default function AdvancedSettings({
 
           {/* ---- JupyterHub Home link (bottom-right) ---- */}
           {hubUrl && (
-            <div
+            <a
+              href={hubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Go to JupyterHub Home"
               style={{
                 position: "absolute",
                 bottom: "10px",
                 right: "15px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "4px 6px",
+                background: "white",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
               }}
             >
-              <a
-                href={hubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-link"
-              >
-                JupyterHub Home
-              </a>
-            </div>
+              <img
+                src="static/JupyterHub.png"
+                alt="JupyterHub Home"
+                style={{
+                  width: "60px",
+                  height: "auto",
+                  display: "block",
+                }}
+              />
+            </a>
           )}
         </div>
       </div>
