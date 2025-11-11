@@ -272,26 +272,33 @@ class Launcher(LoggingConfigurable):
             data.update(extra_args)
 
         config = generate_config()
-        target_site = extra_args.get("resource_requests",{}).get("site")
+        target_site = extra_args.get("resource_requests", {}).get("site")
+        sites = config.get("sites", [])
+        
         if target_site:
-            try:
-                site = next(s for s in config.get("sites",[]) if s["name"] == target_site)
-            except:
-                #site specified but couldn't be found, that's an error
-                raise web.HTTPError(
-                    403,
-                    "site {} not in available sites: {}."
-                    " Please double check!".format(
-                     target_site,  [s["name"] for s in config.get("sites",[])]
-                    ),
-                )
+            if target_site == "local":
+                # Explicitly request the local site
+                site = next((s for s in sites if s.get("local", False)), None)
+                if not site:
+                    raise web.HTTPError(
+                        403,
+                        "Requested 'local' site but no site is configured as local."
+                    )
+            else:
+                # Match by site name
+                site = next((s for s in sites if s["name"] == target_site), None)
+                if not site:
+                    raise web.HTTPError(
+                        403,
+                        f"Site '{target_site}' not found in available sites: {[s['name'] for s in sites]}. "
+                        "Please double check!"
+                    )
         else:
-            #site not specified, which means it's the local site
-            try:
-                site = next(s for s in config.get("sites",[]) if s.get("local",False) == True)
-            except:
-                print("local site not configured!")
-                site= {}
+            # Site not specified → use the local one by default
+            site = next((s for s in sites if s.get("local", False)), None)
+            if not site:
+                print("Warning: local site not configured!")
+                site = {}
 
         requested_gpuModel = extra_args.get("resource_requests",{}).get("gpuModel","")
         requested_gpuCount = extra_args.get("resource_requests",{}).get("gpuCount", 0)
