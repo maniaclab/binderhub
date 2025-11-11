@@ -237,15 +237,26 @@ class BuildHandler(BaseHandler):
         )
         build_only = False
         if build_only_query_parameter.lower() == "true":
-            if not enable_api_only_mode:
-                raise HTTPError(
-                    status_code=400,
-                    log_message="Building but not launching is not permitted when"
-                    " the API only mode was not enabled by setting `enable_api_only_mode` to True. ",
-                )
+        #    if not enable_api_only_mode:
+        #        raise HTTPError(
+        #            status_code=400,
+        #            log_message="Building but not launching is not permitted when"
+        #            " the API only mode was not enabled by setting `enable_api_only_mode` to True. ",
+        #        )
             build_only = True
 
         return build_only
+
+    def _get_image_only(self):
+        # Get the value of the `image_only` query parameter if present
+        image_only_query_parameter = str(
+            self.get_query_argument(name="check_image_only", default="")
+        )
+        image_only = False
+        if image_only_query_parameter.lower() == "true":
+            image_only = True
+
+        return image_only
 
     def redirect(self, *args, **kwargs):
         # disable redirect to login, which won't work for EventSource
@@ -439,6 +450,11 @@ class BuildHandler(BaseHandler):
                 image_found = False
             else:
                 image_found = True
+
+        image_only = self._get_image_only()
+        if image_only:
+            print("images: %s,%s,%s" % (image_without_tag,image_tag,image_name))
+            return self.write({"image_found": image_found, "image": image_name})
 
         build_only = self._get_build_only()
         if image_found:
