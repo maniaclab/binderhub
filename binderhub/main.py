@@ -31,7 +31,7 @@ class UIHandler(BaseHandler):
         self.page_config |= {
             "baseUrl": self.settings["base_url"],
             "badgeBaseUrl": self.get_badge_base_url(),
-            "mainLogo": "extra_static/mainlogo.png",
+            "mainLogo": "/extra_static/mainlogo.png",
             "logoUrl": self.static_url("logo.svg"),
             "logoWidth": "320px",
             "repoProviders": repoproviders_display_config,
