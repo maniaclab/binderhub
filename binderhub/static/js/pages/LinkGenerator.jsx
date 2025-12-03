@@ -194,35 +194,26 @@ export function LinkGenerator({
             disabled={isLaunching}
             aria-label="Enter repository URL"
 	    value={repo}
-            onChange={(e) => {
-              let inputValue = e.target.value.trimStart(); // allow typing but prevent leading spaces
-            
-              // prevent input from being just whitespace
-              if (inputValue === "") {
-                setRepo("");
-                return;
-              }
-            
-              if (selectedProvider.detect && selectedProvider.detect.regex) {
+	    onChange={(e) => setRepo(e.target.value)}
+            onBlur={(e) => {
+              const inputValue = e.target.value.trim();
+ 
+              if (
+                selectedProvider.detect &&
+                selectedProvider.detect.regex
+              ) {
                 try {
                   const re = new RegExp(selectedProvider.detect.regex);
                   const results = re.exec(inputValue);
-            
-                  if (results !== null && results.groups && results.groups.repo) {
-                    // If regex matches, extract repo info
+                  if (results?.groups?.repo) {
                     setRepo(results.groups.repo.trim());
-                  } else {
-                    // Otherwise, keep user's raw input
-                    setRepo(inputValue);
+                    return;
                   }
-                } catch (err) {
-                  console.warn("Invalid regex or detection error:", err);
-                  setRepo(inputValue);
-                }
-              } else {
-                setRepo(inputValue);
+                } catch (_) {}
               }
-            }}
+ 
+              setRepo(inputValue);
+            }}	    
           />
         </div>
       </fieldset>
