@@ -290,7 +290,7 @@ class BuildHandler(BaseHandler):
         adv_keys = ["qos","site","gpuModel","gpuCount","cpu","memory"]
         adv_settings = {key: qargs[key][0].decode("utf-8") for key in adv_keys if key in qargs}
         adv_settings['qos'] = "Guaranteed" if qargs.get("qos",False) else "Burstable"
-        if "gpuModel" in adv_settings and adv_settings["gpuModel"] == [b"Any"]:
+        if "gpuModel" in adv_settings and adv_settings["gpuModel"] == "Any":
             del adv_settings["gpuModel"]
         print(f"sdv_settings: {adv_settings}")
         self.adv_settings = adv_settings
