@@ -174,7 +174,11 @@ class BuildHandler(BaseHandler):
 
         So that intermediate proxies don't terminate an idle connection
         """
-        self._keepalive = True
+        # NOTE: _keepalive is set to True by the caller (get()) before
+        # spawn_callback so that on_finish() can cancel it even when the
+        # handler finishes before this coroutine starts running.  Do NOT
+        # set _keepalive = True here; doing so would overwrite the False
+        # written by on_finish() and cause write-after-finish errors.
         while True:
             await gen.sleep(self.KEEPALIVE_INTERVAL)
             if not self._keepalive:
@@ -303,6 +307,9 @@ class BuildHandler(BaseHandler):
             return
 
         # create a heartbeat
+        # Set _keepalive=True before spawning so on_finish() can reliably
+        # cancel it even if the handler completes before keep_alive() starts.
+        self._keepalive = True
         IOLoop.current().spawn_callback(self.keep_alive)
 
         spec = spec.rstrip("/")
