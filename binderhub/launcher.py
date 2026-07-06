@@ -428,6 +428,15 @@ class Launcher(LoggingConfigurable):
                 500, f"Image {image} for user {username} failed to launch"
             )
 
-        data["url"] = self.hub_url + f"user/{escaped_username}/{server_name}"
+        # Include a trailing slash so the client-side redirect join
+        # (`new URL(urlPath, serverUrl)` in binderhub-client/spec.js) appends the
+        # urlpath to the server's base URL instead of replacing its last path
+        # segment. Without the trailing slash, a named server URL like
+        # `.../user/<user>/<server_name>` loses `<server_name>` when a urlpath is
+        # supplied, redirecting to the (unstartable) default server. For the
+        # default server (server_name="") this collapses to `.../user/<user>/`.
+        data["url"] = url_path_join(
+            self.hub_url, "user", escaped_username, server_name, "/"
+        )
         self.log.debug(data["url"])
         return data
