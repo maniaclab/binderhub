@@ -26,11 +26,22 @@ on:
       - "update-*"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read # actions/checkout
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: install requirements
         run: pip install ruamel.yaml
@@ -42,11 +53,12 @@ jobs:
   # in small things. Unfortunately there is no easy way to share steps between
   # jobs or have "template" jobs, so we use `if` conditions on steps
   tests:
+    name: Tests
     runs-on: ubuntu-22.04
     timeout-minutes: 10
 
     permissions:
-      contents: read
+      contents: read # actions/checkout
     env:
       GITHUB_ACCESS_TOKEN: "${{ secrets.github_token }}"
 
@@ -93,7 +105,7 @@ jobs:
 
     services:
       registry:
-        image: docker.io/library/registry:latest
+        image: docker.io/library/registry:3.1.1@sha256:1be55279f18a2fe1a74edf2664cac61c1bea305b7b4642dab412e7affdcb3e33
         ports:
           - 5000:5000
 
@@ -102,6 +114,7 @@ jobs:
         with:
           # chartpress requires the full history
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set registry host
         if: matrix.test-variation == 'dind' || matrix.test-variation == 'pink'
@@ -193,15 +206,17 @@ jobs:
 
       - name: Use chartpress to create the helm chart
         if: matrix.test == 'helm'
+        env:
+          TEST_VARIATION: "${{ matrix.test-variation }}"
         run: |
           export DOCKER_BUILDKIT=1
 
           CHARTPRESS_ARGS=
-          if [ "${{ matrix.test-variation }}" = "dind" -o "${{ matrix.test-variation }}" = "pink" ]; then
+          if [ "$TEST_VARIATION" = "dind" -o "$TEST_VARIATION" = "pink" ]; then
             CHARTPRESS_ARGS="--image-prefix localhost:5000/binderhub- --push"
 
             # Allow the pods to push to the non-https GitHub workflow registry
-            envsubst < testing/k8s-binder-k8s-hub/cm-insecure-registries-${{ matrix.test-variation }}.yaml | kubectl apply -f -
+            envsubst < testing/k8s-binder-k8s-hub/cm-insecure-registries-${TEST_VARIATION}.yaml | kubectl apply -f -
           fi
 
           # Use chartpress to create the helm chart and build its images
@@ -244,6 +259,9 @@ jobs:
 
       - name: "(Upgrade) Install ${{ matrix.upgrade-from }} chart"
         if: matrix.test-variation == 'upgrade'
+        env:
+          UPGRADE_FROM: "${{ matrix.upgrade-from }}"
+          UPGRADE_FROM_EXTRA_ARGS: "${{ matrix.upgrade-from-extra-args }}"
         run: |
           # NOTE: We change the directory so binderhub the chart name won't be
           #       misunderstood as the local folder name.
@@ -251,12 +269,12 @@ jobs:
           #       https://github.com/helm/helm/issues/9244
           cd ci
 
-          if [ ${{ matrix.upgrade-from }} = stable ]; then
+          if [ "$UPGRADE_FROM" = stable ]; then
             UPGRADE_FROM_VERSION=$(helm show chart --repo=https://hub.jupyter.org/helm-chart/ binderhub | yq e '.version' -)
-          elif [ ${{ matrix.upgrade-from }} = dev ]; then
+          elif [ "$UPGRADE_FROM" = dev ]; then
             UPGRADE_FROM_VERSION=$(helm show chart --devel --repo=https://hub.jupyter.org/helm-chart/ binderhub | yq e '.version' -)
           else
-            UPGRADE_FROM_VERSION=${{ matrix.upgrade-from }}
+            UPGRADE_FROM_VERSION="$UPGRADE_FROM"
           fi
           echo "UPGRADE_FROM_VERSION=$UPGRADE_FROM_VERSION" >> $GITHUB_ENV
 
@@ -278,7 +296,7 @@ jobs:
               --set config.BinderHub.hub_url=http://localhost:30902 \
               --set config.BinderHub.hub_url_local=http://proxy-public \
               --set config.GitHubRepoProvider.access_token=$GITHUB_ACCESS_TOKEN \
-              ${{ matrix.upgrade-from-extra-args }}
+              ${UPGRADE_FROM_EXTRA_ARGS}
 
       - name: "(Upgrade) Install helm diff"
         if: matrix.test-variation == 'upgrade'
@@ -287,13 +305,15 @@ jobs:
 
       - name: "(Upgrade) Helm diff ${{ matrix.upgrade-from }} chart with local chart"
         if: matrix.test-variation == 'upgrade'
+        env:
+          LOCAL_CHART_EXTRA_ARGS: "${{ matrix.local-chart-extra-args }}"
         run: |
           helm diff upgrade binderhub-test ./helm-chart/binderhub \
               --values testing/k8s-binder-k8s-hub/binderhub-chart-config.yaml \
               --set config.BinderHub.hub_url=http://localhost:30902 \
               --set config.BinderHub.hub_url_local=http://proxy-public \
               --set config.GitHubRepoProvider.access_token=$GITHUB_ACCESS_TOKEN \
-              ${{ matrix.local-chart-extra-args }}
+              ${LOCAL_CHART_EXTRA_ARGS}
 
       - name: "(Upgrade) Await ${{ matrix.upgrade-from }} chart"
         if: matrix.test-variation == 'upgrade'
@@ -310,13 +330,15 @@ jobs:
 
       - name: Install the chart
         if: matrix.test == 'helm'
+        env:
+          LOCAL_CHART_EXTRA_ARGS: "${{ matrix.local-chart-extra-args }}"
         run: |
           helm upgrade --install binderhub-test helm-chart/binderhub \
               --values testing/k8s-binder-k8s-hub/binderhub-chart-config.yaml \
               --set config.BinderHub.hub_url=http://localhost:30902 \
               --set config.BinderHub.hub_url_local=http://proxy-public \
               --set config.GitHubRepoProvider.access_token=$GITHUB_ACCESS_TOKEN \
-              ${{ matrix.local-chart-extra-args }}
+              ${LOCAL_CHART_EXTRA_ARGS}
 
       - name: Await and curl JupyterHub
         run: |
@@ -353,8 +375,10 @@ jobs:
 
       - name: Get BinderHub health and metrics outputs
         if: always()
+        env:
+          TEST: "${{ matrix.test }}"
         run: |
-          if [ "${{ matrix.test }}" = "helm" ]; then
+          if [ "$TEST" = "helm" ]; then
             for endpoint in versions health metrics; do
               echo -e "\n${endpoint}"
               curl http://localhost:30901/$endpoint --fail-with-body
@@ -377,16 +401,19 @@ jobs:
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
   test-local:
+    name: Test local
     runs-on: ubuntu-22.04
     timeout-minutes: 5
 
     permissions:
-      contents: read
+      contents: read # actions/checkout
     env:
       GITHUB_ACCESS_TOKEN: "${{ secrets.github_token }}"
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup OS level dependencies
         run: |
@@ -442,7 +469,7 @@ jobs:
         run: playwright install firefox
 
       - name: Setup JupyterHub NPM dependencies
-        run: npm install -g configurable-http-proxy
+        run: npm install -g configurable-http-proxy@5.3.0
 
       - name: Await and curl JupyterHub
         run: |

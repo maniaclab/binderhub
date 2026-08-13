@@ -23,6 +23,12 @@ on:
       - "update-*"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 jobs:
   # Builds and pushes docker images to quay.io, packages the Helm chart and
   # pushes it to jupyterhub/helm-chart@gh-pages where index.yaml represents the
@@ -32,13 +38,17 @@ jobs:
   # ref: https://quay.io/organization/jupyterhub
   #
   Publish:
+    name: Publish
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/main')
+    permissions:
+      contents: read # actions/checkout; pushes to quay.io/docker.io and jupyterhub/helm-chart use their own credentials, not GITHUB_TOKEN
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # chartpress requires the full history
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -78,10 +88,12 @@ jobs:
         #    with push rights for the jupyterhub/helm chart repo:
         #    https://github.com/jupyterhub/helm-chart/settings/keys
         #
+        env:
+          DEPLOY_KEY: "${{ secrets.JUPYTERHUB_HELM_CHART_DEPLOY_KEY }}"
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan github.com >> ~/.ssh/known_hosts
-          echo "${{ secrets.JUPYTERHUB_HELM_CHART_DEPLOY_KEY }}" > ~/.ssh/id_ed25519
+          echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
       - name: Setup push rights to Quay.io
@@ -90,9 +102,14 @@ jobs:
         # .  quay.io org
         # 2. Giving it enough permissions to push to the binderhub image
         # 3. Putting the robot account's username and password in GitHub actions environment
+        env:
+          QUAY_USERNAME: "${{ secrets.QUAY_USERNAME }}"
+          QUAY_PASSWORD: "${{ secrets.QUAY_PASSWORD }}"
+          DOCKER_USERNAME: "${{ secrets.DOCKER_USERNAME }}"
+          DOCKER_PASSWORD: "${{ secrets.DOCKER_PASSWORD }}"
         run: |
-          docker login -u "${{ secrets.QUAY_USERNAME }}" -p "${{ secrets.QUAY_PASSWORD }}" quay.io
-          docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}" docker.io
+          docker login -u "$QUAY_USERNAME" -p "$QUAY_PASSWORD" quay.io
+          docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD" docker.io
 
       - name: Configure a git user
         # Having a user.email and user.name configured with git is required to
@@ -111,12 +128,16 @@ jobs:
           ./ci/publish
 
   PyPI-testbuild:
+    name: PyPI testbuild
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Versioneer requires past tags
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
