@@ -11,7 +11,7 @@
 repos:
   # Autoformat: Python code, syntax patterns are modernized
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.20.0
+    rev: 75992aaa40730136014f34227e0135f63fc951b4 # frozen: v3.21.2
     hooks:
       - id: pyupgrade
         args:
@@ -19,14 +19,14 @@ repos:
 
   # Autoformat: Python code
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 8a737e727ac5ab2f1d4cf5876720ed276dc8dc4b # frozen: 25.1.0 (held back, reformats unrelated files, see PR notes)
     hooks:
       - id: black
         # args are not passed, but see the config in pyproject.toml
 
   # Autoformat: Python code
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: a333737ed43df02b18e6c95477ea1b285b3de15a # frozen: 8.0.1
     hooks:
       - id: isort
         # args are not passed, but see the config in pyproject.toml
@@ -49,7 +49,7 @@ repos:
 
   # Autoformat: js, html, markdown, yaml, json
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.6.2
+    rev: 5ba47274f9b181bce26a5150a725577f3c336011 # frozen: v3.6.2 (held back, reformats unrelated files, see PR notes)
     hooks:
       - id: prettier
         exclude_types:
@@ -61,7 +61,7 @@ repos:
 
   # Misc autoformatting and linting
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       - id: end-of-file-fixer
         exclude_types: [svg]
@@ -73,9 +73,17 @@ repos:
 
   # Lint: Python code
   - repo: https://github.com/PyCQA/flake8
-    rev: "7.3.0"
+    rev: "c48217e1fc006c2dddd14df54e83b67da15de5cd" # frozen: 7.3.0
     hooks:
       - id: flake8
+
+  # Lint: GitHub Actions security
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 451b56af716f9f0d0c2b816503a3fd0cf8b036fa # frozen: v1.29.0
+    hooks:
+      - id: zizmor
+        files: "^\\.github"
+        args: [--persona=pedantic]
 
 # versioneer.py is excluded for being an imported dependency we opt to not
 # modify ourselves. This is also set in .flake8 for consistency.

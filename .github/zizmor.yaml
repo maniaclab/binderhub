@@ -1,0 +1,26 @@
+# zizmor configuration reference: https://docs.zizmor.sh/configuration/
+#
+# Run with: uvx zizmor --persona=pedantic .github
+#
+rules:
+  adhoc-packages:
+    ignore:
+      # configurable-http-proxy is installed globally (not from package.json)
+      # because it needs to be on PATH for JupyterHub to spawn it as a
+      # subprocess; it is version-pinned to avoid pulling an unreviewed
+      # release. Moving it into package.json would make it a project
+      # dependency of the JS frontend, which is out of scope for a CI
+      # security hardening change.
+      - playwright.yaml:86
+      - test.yml:472
+
+  superfluous-actions:
+    ignore:
+      # peter-evans/create-pull-request is already pinned to a commit SHA and
+      # scoped to a job with read-only default permissions; it authenticates
+      # with its own PAT (not GITHUB_TOKEN). Replacing it with an inline
+      # `gh pr create` script would mean reimplementing its author/committer/
+      # branch/label handling, which is a functional change outside the scope
+      # of a CI security hardening pass.
+      - watch-dependencies.yaml:112
+      - watch-dependencies.yaml:150
