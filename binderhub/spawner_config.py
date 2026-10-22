@@ -1,33 +1,23 @@
 from .base import BaseHandler
+import os
 import yaml
 import requests
 import json
 from requests import HTTPError
-import base64
-import kubernetes.config
-from kubernetes import client
 
 from functools import lru_cache
 import time
 
 hub_api = 'http://proxy-public/hub/api/'
 
+def hub_api_token():
+    """The binder service's own hub token, which the chart injects from the hub
+    Secret. Its scopes (servers, admin:users) cover listing users and their
+    servers, so this pod needs no access to Kubernetes Secrets."""
+    return os.environ.get("JUPYTERHUB_API_TOKEN", "")
+
 class SpawnerConfigHandler(BaseHandler):
     """Serve config"""
-    try:
-        kubernetes.config.load_incluster_config()
-    except kubernetes.config.ConfigException:
-        #kubernetes.config.load_kube_config()
-        print("load incluster config exception")
-    try: 
-        api = client.CoreV1Api()
-        secrets = api.list_namespaced_secret("binderhub")
-        secret = next(s for s in secrets.items if s.metadata.name == "binderhub-values")
-        hvstring=base64.b64decode(secret.data.get("values.yaml"))
-        harborvalues=yaml.load(hvstring, Loader=yaml.SafeLoader)
-        apitoken=harborvalues.get("jupyterhub",{}).get("hub",{}).get("services",{}).get("binder-manager",{}).get("apiToken","")
-    except:
-        print("apitoken exception")
 
     async def get(self):
         self.write(generate_config_test())
@@ -71,7 +61,7 @@ def api_request(path, method='get', data=None):
         data = json.dumps(data)
     
     r = requests.request(method, hub_api + path,
-        headers={'Authorization': 'token %s' % SpawnerConfigHandler.apitoken},
+        headers={'Authorization': 'token %s' % hub_api_token()},
         data=data,
     )
     try:
@@ -103,7 +93,9 @@ def get_gpu_usage(users):
                 resources = v.get("user_options", {}).get("resource_requests")
                 gpu_count = int(resources.get("gpuCount"))
                 gpu_model = resources.get("gpuModel")
-                site = v.get("state",{}).get("site")
+                # The server's state is only visible with admin:server_state, which
+                # the binder token does not have; the requested site is in user_options.
+                site = resources.get("site")
                 if not sites.get(site):
                     sites[site] = {gpu_model:gpu_count}
                 elif not sites[site].get(gpu_model):
