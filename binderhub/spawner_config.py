@@ -1,14 +1,18 @@
 from .base import BaseHandler
+import asyncio
 import os
 import yaml
 import requests
 import json
 from requests import HTTPError
+from tornado.log import app_log
 
 from functools import lru_cache
 import time
 
 hub_api = 'http://proxy-public/hub/api/'
+# Seconds to wait for the hub API, so a slow hub can't hang the caller.
+hub_api_timeout = 10
 
 def hub_api_token():
     """The binder service's own hub token, which the chart injects from the hub
@@ -20,7 +24,14 @@ class SpawnerConfigHandler(BaseHandler):
     """Serve config"""
 
     async def get(self):
-        self.write(generate_config_test())
+        # Serve GPU availability with the servers in use subtracted. Fall back to
+        # the static config if the hub can't be reached, so the page still loads.
+        try:
+            config = await asyncio.wrap_future(self.settings["executor"].submit(generate_config))
+        except Exception:
+            app_log.exception("Failed to add live GPU usage to the spawner config")
+            config = generate_config_test()
+        self.write(config)
 
 def generate_config_test():
     """reads spawner config from configuration and add in live gpu availability data"""
@@ -43,7 +54,7 @@ def generate_config():
         site =  next((s for s in sites if s['name'] == site_name), {})
         for model, count in gpu_usage.items():
             gpu = next((g for g in site.get("resources",{}).get('gpu',[]) if g['product'] == model), {})
-            gpu['available'] = gpu.get('count', 0) - count
+            gpu['available'] = max(gpu.get('count', 0) - count, 0)
     return config
 
 def get_ttl_hash(seconds=10):
@@ -63,6 +74,7 @@ def api_request(path, method='get', data=None):
     r = requests.request(method, hub_api + path,
         headers={'Authorization': 'token %s' % hub_api_token()},
         data=data,
+        timeout=hub_api_timeout,
     )
     try:
         r.raise_for_status()
