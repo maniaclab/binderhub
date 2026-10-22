@@ -84,7 +84,9 @@ def get_gpu_availability(product=None, memory=None, ttl_hash=None):
         else:
             gpus[product]['count'] += count
         gpu = gpus[product]
-        pods = api.list_pod_for_all_namespaces(field_selector='spec.nodeName=%s' %node.metadata.name).items
+        # Finished pods keep their resource requests in the spec but no longer hold
+        # the GPU, so only count pods that are pending or running.
+        pods = api.list_pod_for_all_namespaces(field_selector='spec.nodeName=%s,status.phase!=Succeeded,status.phase!=Failed' %node.metadata.name).items
         for pod in pods:
             for container in pod.spec.containers:
                 requests = container.resources.requests
