@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { jest } from "@jest/globals";
 
 import { HomePage } from "./HomePage";
 
@@ -168,4 +169,46 @@ test("change source type", async () => {
   expect(
     screen.getByText("http://local.com/v2/zenodo/10.5282/zenodo.3242075/"),
   ).toBeInTheDocument();
+});
+
+test("curated list hides GPU-only entries when no GPUs are requested", async () => {
+  const originalFetch = global.fetch;
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      curatedRepos: [
+        {
+          name: "img:cpu",
+          provider: "gh",
+          repo: "o/cpu",
+          ref: "main",
+          accelerator: "cpu",
+        },
+        {
+          name: "img:gpu",
+          provider: "gh",
+          repo: "o/gpu",
+          ref: "main",
+          accelerator: "gpu",
+        },
+        { name: "img:any", provider: "gh", repo: "o/any", ref: "main" },
+      ],
+    }),
+  });
+  try {
+    render(
+      <HomePage
+        providers={window.pageConfig.repoProviders}
+        baseUrl={"http://local.com"}
+        publicBaseUrl={"http://local.com"}
+      />,
+    );
+    expect(
+      await screen.findByRole("option", { name: "img:cpu" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "img:any" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "img:gpu" })).toBeNull();
+  } finally {
+    global.fetch = originalFetch;
+  }
 });

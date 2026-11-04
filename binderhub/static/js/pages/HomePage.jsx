@@ -4,8 +4,9 @@ import { HowItWorks } from "@jupyterhub/binderhub-react-components/HowItWorks.js
 import { useEffect, useState } from "react";
 import { FaviconUpdater } from "@jupyterhub/binderhub-react-components/FaviconUpdater.jsx";
 import { Spec, LaunchSpec } from "@jupyterhub/binderhub-client/spec.js";
-import AdvancedSettings from './AdvSetting.jsx';
-import { LinkGenerator } from './LinkGenerator.jsx';
+import AdvancedSettings from "./AdvSetting.jsx";
+import { LinkGenerator } from "./LinkGenerator.jsx";
+import { filterCuratedRepos } from "./curatedRepos.js";
 /**
  * @typedef {object} HomePageProps
  * @prop {import("../App.jsx").Provider[]} providers
@@ -26,10 +27,25 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
     sites: "local",
     qos: false,
     cpu: 1,
-    memory: 1.0
+    memory: 1.0,
   });
 
   const [curatedRepos, setCuratedRepos] = useState([]);
+  const [selectedCurated, setSelectedCurated] = useState("");
+  const visibleCuratedRepos = filterCuratedRepos(
+    curatedRepos,
+    advSetting.gpuCount,
+  );
+
+  // Clear the curated selection when a GPU count change hides it.
+  useEffect(() => {
+    if (
+      selectedCurated &&
+      !visibleCuratedRepos.some((r) => r.name === selectedCurated)
+    ) {
+      setSelectedCurated("");
+    }
+  }, [selectedCurated, visibleCuratedRepos]);
 
   // Fetch curated repos once
   useEffect(() => {
@@ -61,8 +77,10 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
     }
 
     const searchParams = new URLSearchParams();
-    if (advSetting.gpuProduct) searchParams.append("gpuModel", advSetting.gpuProduct);
-    if (advSetting.gpuCount) searchParams.append("gpuCount", advSetting.gpuCount);
+    if (advSetting.gpuProduct)
+      searchParams.append("gpuModel", advSetting.gpuProduct);
+    if (advSetting.gpuCount)
+      searchParams.append("gpuCount", advSetting.gpuCount);
     if (advSetting.qos) searchParams.append("qos", advSetting.qos);
     if (advSetting.cpu) searchParams.append("cpu", advSetting.cpu);
     if (advSetting.memory) searchParams.append("memory", advSetting.memory);
@@ -147,24 +165,25 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
             <select
               className="form-control border border-2 border-end-0"
               onChange={(e) => {
+                setSelectedCurated(e.target.value);
                 const selected = curatedRepos.find(
-                  (r) => r.name === e.target.value
+                  (r) => r.name === e.target.value,
                 );
                 if (selected) {
                   setRepo(selected.repo);
                   setRef(selected.ref);
                   setSelectedProvider(
                     providers.find((p) => p.id === selected.provider) ||
-                      selectedProvider
+                      selectedProvider,
                   );
                 }
               }}
-              defaultValue=""
+              value={selectedCurated}
             >
               <option value="" disabled>
                 Select a curated repo...
               </option>
-              {curatedRepos.map((r) => (
+              {visibleCuratedRepos.map((r) => (
                 <option key={r.name} value={r.name}>
                   {r.name}
                 </option>
@@ -196,4 +215,3 @@ export function HomePage({ providers, publicBaseUrl, baseUrl }) {
     </>
   );
 }
-
