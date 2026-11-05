@@ -48,7 +48,7 @@ def get_gpu_availability(product=None, memory=None, ttl_hash=None):
     1. Create a hash map of GPUs grouped by their product name.
     2. Get a set of Kubernetes nodes that have GPU support.
         a. If a product name or cache size is specified, get the set of nodes that supports the product.
-        b. If no product name or cache size is specified, get the set of all nodes that are labeled gpu=true.
+        b. If no product name or cache size is specified, get the set of all nodes that have an nvidia.com/gpu.product label.
     3. Iterate over the set of Kubernetes nodes.
         a. Get the GPU that is used by the node.
         b. Update the hash map.
@@ -70,9 +70,9 @@ def get_gpu_availability(product=None, memory=None, ttl_hash=None):
     api = ResourcesHandler.api
 
     if product:
-        nodes = api.list_node(label_selector='gpu=true,nvidia.com/gpu.product=%s' %product)
+        nodes = api.list_node(label_selector='nvidia.com/gpu.product=%s' %product)
     elif memory:
-        nodes = api.list_node(label_selector='gpu=true,nvidia.com/gpu.memory=%s' %memory)
+        nodes = api.list_node(label_selector='nvidia.com/gpu.memory=%s' %memory)
     else: 
         nodes = api.list_node(label_selector='nvidia.com/gpu.product')
     for node in nodes.items:
